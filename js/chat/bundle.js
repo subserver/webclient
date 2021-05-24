@@ -104,7 +104,7 @@ __webpack_require__.d(__webpack_exports__, "SoonFcWrap", function() { return Soo
 __webpack_require__.d(__webpack_exports__, "trycatcher", function() { return trycatcher; });
 __webpack_require__.d(__webpack_exports__, "MegaRenderMixin", function() { return MegaRenderMixin; });
 __webpack_require__.d(__webpack_exports__, "ContactAwareComponent", function() { return ContactAwareComponent; });
-var _applyDecoratedDescriptor0__ = __webpack_require__(7);
+var _applyDecoratedDescriptor0__ = __webpack_require__(8);
 var _applyDecoratedDescriptor0 = __webpack_require__.n(_applyDecoratedDescriptor0__);
 var react_dom1__ = __webpack_require__(6);
 var react_dom1 = __webpack_require__.n(react_dom1__);
@@ -975,7 +975,7 @@ __webpack_require__.d(__webpack_exports__, "DropdownContactsSelector", function(
 __webpack_require__.d(__webpack_exports__, "DropdownItem", function() { return DropdownItem; });
 var _utils_jsx0__ = __webpack_require__(5);
 var _stores_mixins_js1__ = __webpack_require__(1);
-var _chat_ui_contacts_jsx2__ = __webpack_require__(3);
+var _chat_ui_contacts_jsx2__ = __webpack_require__(4);
 var React = __webpack_require__(0);
 
 
@@ -1390,6 +1390,240 @@ DropdownItem.defaultProps = {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+__webpack_require__.d(__webpack_exports__, "Button", function() { return Button; });
+var _extends0__ = __webpack_require__(7);
+var _extends0 = __webpack_require__.n(_extends0__);
+var react1__ = __webpack_require__(0);
+var react1 = __webpack_require__.n(react1__);
+var _stores_mixins_js2__ = __webpack_require__(1);
+
+
+
+let _buttonGroups = {};
+class Button extends _stores_mixins_js2__["MegaRenderMixin"] {
+  constructor(props) {
+    super(props);
+    this.buttonClass = ".button";
+    this.state = {
+      focused: false,
+      hovered: false,
+      iconHovered: ''
+    };
+
+    this.onBlur = e => {
+      if (!this.isMounted()) {
+        return;
+      }
+
+      if (!e || !$(e.target).closest(this.buttonClass).is(this.findDOMNode())) {
+        this.setState({
+          focused: false
+        }, () => {
+          this.unbindEvents();
+          this.safeForceUpdate();
+        });
+      }
+    };
+
+    this.toggleHovered = () => this.setState({
+      hovered: !this.state.hovered
+    });
+
+    this.onClick = e => {
+      if (this.props.disabled === true) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      if ($(e.target).closest('.popup').closest(this.buttonClass).is(this.findDOMNode()) && this.state.focused === true) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      if ($(e.target).is('input, textarea, select')) {
+        return;
+      }
+
+      if (this.state.focused === false) {
+        if (this.props.onClick) {
+          this.props.onClick(this, e);
+        } else if (react1.a.Children.count(this.props.children) > 0) {
+          this.setState({
+            focused: true
+          });
+        }
+      } else if (this.state.focused === true) {
+        this.setState({
+          focused: false
+        });
+        this.unbindEvents();
+      }
+    };
+
+    this.state.iconHovered = this.props.iconHovered || '';
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    if (nextProps.disabled === true && nextState.focused === true) {
+      nextState.focused = false;
+    }
+
+    if (this.state.focused !== nextState.focused && nextState.focused === true) {
+      $('.conversationsApp').rebind('mousedown.button' + this.getUniqueId(), this.onBlur);
+      $(document).rebind('keyup.button' + this.getUniqueId(), e => {
+        if (this.state.focused === true && e.keyCode === 27) {
+            this.onBlur();
+          }
+      });
+
+      if (this._pageChangeListener) {
+        mBroadcaster.removeListener(this._pageChangeListener);
+      }
+
+      this._pageChangeListener = mBroadcaster.addListener('pagechange', () => {
+        if (this.state.focused === true) {
+          this.onBlur();
+        }
+      });
+      $(document).rebind('closeDropdowns.' + this.getUniqueId(), () => this.onBlur());
+
+      if (this.props.group) {
+        if (_buttonGroups[this.props.group] && _buttonGroups[this.props.group] !== this) {
+          _buttonGroups[this.props.group].setState({
+            focused: false
+          });
+
+          _buttonGroups[this.props.group].unbindEvents();
+        }
+
+        _buttonGroups[this.props.group] = this;
+      }
+    }
+
+    if (this.props.group && nextState.focused === false && _buttonGroups[this.props.group] === this) {
+      _buttonGroups[this.props.group] = null;
+    }
+  }
+
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    this.unbindEvents();
+  }
+
+  renderChildren() {
+    var self = this;
+
+    if (react1.a.Children.count(self.props.children) < 1) {
+      return null;
+    }
+
+    return react1.a.Children.map(this.props.children, function (child) {
+      if (!child) {
+        return;
+      }
+
+      if (typeof child.type === 'string' || typeof child.type === 'undefined') {
+        return child;
+      }
+
+      return react1.a.cloneElement(child, {
+        active: self.state.focused,
+        closeDropdown: function () {
+          self.setState({
+            'focused': false
+          });
+          self.unbindEvents();
+        },
+        onActiveChange: function (newVal) {
+          var $element = $(self.findDOMNode());
+          var $scrollables = $element.parents('.jScrollPaneContainer, .perfectScrollbarContainer');
+
+          if ($scrollables.length > 0) {
+            if (newVal === true) {
+              $scrollables.attr('data-scroll-disabled', true);
+              $scrollables.filter('.perfectScrollbarContainer').each(function (k, element) {
+                Ps.disable(element);
+              });
+            } else {
+              $scrollables.removeAttr('data-scroll-disabled');
+              $scrollables.filter('.perfectScrollbarContainer').each(function (k, element) {
+                Ps.enable(element);
+              });
+            }
+          }
+
+          if (child.props.onActiveChange) {
+            child.props.onActiveChange.call(this, newVal);
+          }
+        }
+      });
+    }.bind(this));
+  }
+
+  unbindEvents() {
+    $(document).off('keyup.button' + this.getUniqueId());
+    $(document).off('closeDropdowns.' + this.getUniqueId());
+    $('.conversationsApp').unbind('mousedown.button' + this.getUniqueId());
+
+    if (this._pageChangeListener) {
+      mBroadcaster.removeListener(this._pageChangeListener);
+    }
+  }
+
+  render() {
+    const {
+      className,
+      disabled,
+      style,
+      icon,
+      iconHovered,
+      label,
+      attrs,
+      toggle,
+      secondLabel,
+      secondLabelClass
+    } = this.props;
+    const isMegaButton = className && className.indexOf('mega-button') > -1;
+    const TagName = isMegaButton ? 'button' : 'div';
+    return react1.a.createElement(TagName, _extends0()({
+      className: "\n                    button\n                    " + (className ? className : '') + "\n                    " + (disabled ? 'disabled' : '') + "\n                    " + (this.state.focused ? 'active active-dropdown' : '') + "\n                ",
+      style: style,
+      onClick: this.onClick,
+      onMouseEnter: iconHovered ? this.toggleHovered : undefined,
+      onMouseLeave: iconHovered ? this.toggleHovered : undefined
+    }, attrs), icon && !isMegaButton && react1.a.createElement("div", null, react1.a.createElement("i", {
+      className: this.state.hovered ? this.state.iconHovered : icon
+    })), icon && isMegaButton && react1.a.createElement("div", null, react1.a.createElement("i", {
+      className: this.state.hovered ? this.state.iconHovered : icon
+    })), label && react1.a.createElement("span", null, label), secondLabel && react1.a.createElement("span", {
+      className: secondLabelClass ? secondLabelClass : '',
+      dangerouslySetInnerHTML: {
+        __html: this.props.secondLabel
+      }
+    }), toggle && react1.a.createElement("div", {
+      className: "\n                            mega-switch\n                            " + (toggle.className ? toggle.className : '') + "\n                            " + (toggle.enabled ? 'toggle-on' : '') + "\n                        ",
+      onClick: ev => {
+        ev.stopPropagation();
+
+        if (this.props.toggle.onClick) {
+          this.props.toggle.onClick();
+        }
+      }
+    }, react1.a.createElement("div", {
+      className: "mega-feature-switch"
+    })), this.renderChildren());
+  }
+
+}
+
+/***/ }),
+
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 __webpack_require__.d(__webpack_exports__, "ContactsListItem", function() { return ContactsListItem; });
 __webpack_require__.d(__webpack_exports__, "ContactButton", function() { return ContactButton; });
 __webpack_require__.d(__webpack_exports__, "ContactVerified", function() { return ContactVerified; });
@@ -1402,14 +1636,14 @@ __webpack_require__.d(__webpack_exports__, "Avatar", function() { return Avatar;
 __webpack_require__.d(__webpack_exports__, "ContactCard", function() { return ContactCard; });
 __webpack_require__.d(__webpack_exports__, "ContactItem", function() { return ContactItem; });
 __webpack_require__.d(__webpack_exports__, "ContactPickerWidget", function() { return ContactPickerWidget; });
-var _extends0__ = __webpack_require__(8);
+var _extends0__ = __webpack_require__(7);
 var _extends0 = __webpack_require__.n(_extends0__);
 var react1__ = __webpack_require__(0);
 var react1 = __webpack_require__.n(react1__);
 var _stores_mixins_js2__ = __webpack_require__(1);
 var _ui_utils_jsx3__ = __webpack_require__(5);
 var _ui_perfectScrollbar_jsx4__ = __webpack_require__(11);
-var _ui_buttons_jsx5__ = __webpack_require__(4);
+var _ui_buttons_jsx5__ = __webpack_require__(3);
 var _ui_dropdowns_jsx6__ = __webpack_require__(2);
 
 
@@ -2801,240 +3035,6 @@ ContactPickerWidget.defaultProps = {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-__webpack_require__.d(__webpack_exports__, "Button", function() { return Button; });
-var _extends0__ = __webpack_require__(8);
-var _extends0 = __webpack_require__.n(_extends0__);
-var react1__ = __webpack_require__(0);
-var react1 = __webpack_require__.n(react1__);
-var _stores_mixins_js2__ = __webpack_require__(1);
-
-
-
-let _buttonGroups = {};
-class Button extends _stores_mixins_js2__["MegaRenderMixin"] {
-  constructor(props) {
-    super(props);
-    this.buttonClass = ".button";
-    this.state = {
-      focused: false,
-      hovered: false,
-      iconHovered: ''
-    };
-
-    this.onBlur = e => {
-      if (!this.isMounted()) {
-        return;
-      }
-
-      if (!e || !$(e.target).closest(this.buttonClass).is(this.findDOMNode())) {
-        this.setState({
-          focused: false
-        }, () => {
-          this.unbindEvents();
-          this.safeForceUpdate();
-        });
-      }
-    };
-
-    this.toggleHovered = () => this.setState({
-      hovered: !this.state.hovered
-    });
-
-    this.onClick = e => {
-      if (this.props.disabled === true) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-
-      if ($(e.target).closest('.popup').closest(this.buttonClass).is(this.findDOMNode()) && this.state.focused === true) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-
-      if ($(e.target).is('input, textarea, select')) {
-        return;
-      }
-
-      if (this.state.focused === false) {
-        if (this.props.onClick) {
-          this.props.onClick(this, e);
-        } else if (react1.a.Children.count(this.props.children) > 0) {
-          this.setState({
-            focused: true
-          });
-        }
-      } else if (this.state.focused === true) {
-        this.setState({
-          focused: false
-        });
-        this.unbindEvents();
-      }
-    };
-
-    this.state.iconHovered = this.props.iconHovered || '';
-  }
-
-  componentWillUpdate(nextProps, nextState) {
-    if (nextProps.disabled === true && nextState.focused === true) {
-      nextState.focused = false;
-    }
-
-    if (this.state.focused !== nextState.focused && nextState.focused === true) {
-      $('.conversationsApp').rebind('mousedown.button' + this.getUniqueId(), this.onBlur);
-      $(document).rebind('keyup.button' + this.getUniqueId(), e => {
-        if (this.state.focused === true && e.keyCode === 27) {
-            this.onBlur();
-          }
-      });
-
-      if (this._pageChangeListener) {
-        mBroadcaster.removeListener(this._pageChangeListener);
-      }
-
-      this._pageChangeListener = mBroadcaster.addListener('pagechange', () => {
-        if (this.state.focused === true) {
-          this.onBlur();
-        }
-      });
-      $(document).rebind('closeDropdowns.' + this.getUniqueId(), () => this.onBlur());
-
-      if (this.props.group) {
-        if (_buttonGroups[this.props.group] && _buttonGroups[this.props.group] !== this) {
-          _buttonGroups[this.props.group].setState({
-            focused: false
-          });
-
-          _buttonGroups[this.props.group].unbindEvents();
-        }
-
-        _buttonGroups[this.props.group] = this;
-      }
-    }
-
-    if (this.props.group && nextState.focused === false && _buttonGroups[this.props.group] === this) {
-      _buttonGroups[this.props.group] = null;
-    }
-  }
-
-  componentWillUnmount() {
-    super.componentWillUnmount();
-    this.unbindEvents();
-  }
-
-  renderChildren() {
-    var self = this;
-
-    if (react1.a.Children.count(self.props.children) < 1) {
-      return null;
-    }
-
-    return react1.a.Children.map(this.props.children, function (child) {
-      if (!child) {
-        return;
-      }
-
-      if (typeof child.type === 'string' || typeof child.type === 'undefined') {
-        return child;
-      }
-
-      return react1.a.cloneElement(child, {
-        active: self.state.focused,
-        closeDropdown: function () {
-          self.setState({
-            'focused': false
-          });
-          self.unbindEvents();
-        },
-        onActiveChange: function (newVal) {
-          var $element = $(self.findDOMNode());
-          var $scrollables = $element.parents('.jScrollPaneContainer, .perfectScrollbarContainer');
-
-          if ($scrollables.length > 0) {
-            if (newVal === true) {
-              $scrollables.attr('data-scroll-disabled', true);
-              $scrollables.filter('.perfectScrollbarContainer').each(function (k, element) {
-                Ps.disable(element);
-              });
-            } else {
-              $scrollables.removeAttr('data-scroll-disabled');
-              $scrollables.filter('.perfectScrollbarContainer').each(function (k, element) {
-                Ps.enable(element);
-              });
-            }
-          }
-
-          if (child.props.onActiveChange) {
-            child.props.onActiveChange.call(this, newVal);
-          }
-        }
-      });
-    }.bind(this));
-  }
-
-  unbindEvents() {
-    $(document).off('keyup.button' + this.getUniqueId());
-    $(document).off('closeDropdowns.' + this.getUniqueId());
-    $('.conversationsApp').unbind('mousedown.button' + this.getUniqueId());
-
-    if (this._pageChangeListener) {
-      mBroadcaster.removeListener(this._pageChangeListener);
-    }
-  }
-
-  render() {
-    const {
-      className,
-      disabled,
-      style,
-      icon,
-      iconHovered,
-      label,
-      attrs,
-      toggle,
-      secondLabel,
-      secondLabelClass
-    } = this.props;
-    const isMegaButton = className && className.indexOf('mega-button') > -1;
-    const TagName = isMegaButton ? 'button' : 'div';
-    return react1.a.createElement(TagName, _extends0()({
-      className: "\n                    button\n                    " + (className ? className : '') + "\n                    " + (disabled ? 'disabled' : '') + "\n                    " + (this.state.focused ? 'active active-dropdown' : '') + "\n                ",
-      style: style,
-      onClick: this.onClick,
-      onMouseEnter: iconHovered ? this.toggleHovered : undefined,
-      onMouseLeave: iconHovered ? this.toggleHovered : undefined
-    }, attrs), icon && !isMegaButton && react1.a.createElement("div", null, react1.a.createElement("i", {
-      className: this.state.hovered ? this.state.iconHovered : icon
-    })), icon && isMegaButton && react1.a.createElement("div", null, react1.a.createElement("i", {
-      className: this.state.hovered ? this.state.iconHovered : icon
-    })), label && react1.a.createElement("span", null, label), secondLabel && react1.a.createElement("span", {
-      className: secondLabelClass ? secondLabelClass : '',
-      dangerouslySetInnerHTML: {
-        __html: this.props.secondLabel
-      }
-    }), toggle && react1.a.createElement("div", {
-      className: "\n                            mega-switch\n                            " + (toggle.className ? toggle.className : '') + "\n                            " + (toggle.enabled ? 'toggle-on' : '') + "\n                        ",
-      onClick: ev => {
-        ev.stopPropagation();
-
-        if (this.props.toggle.onClick) {
-          this.props.toggle.onClick();
-        }
-      }
-    }, react1.a.createElement("div", {
-      className: "mega-feature-switch"
-    })), this.renderChildren());
-  }
-
-}
-
-/***/ }),
-
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
 __webpack_require__.d(__webpack_exports__, "EmojiFormattedContent", function() { return EmojiFormattedContent; });
 var _stores_mixins_js0__ = __webpack_require__(1);
 var React = __webpack_require__(0);
@@ -3305,6 +3305,32 @@ module.exports = ReactDOM;
 
 /***/ (function(module, exports) {
 
+function _extends() {
+  module.exports = _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  module.exports["default"] = module.exports, module.exports.__esModule = true;
+  return _extends.apply(this, arguments);
+}
+
+module.exports = _extends;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+
+/***/ (function(module, exports) {
+
 function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
   var desc = {};
   Object.keys(descriptor).forEach(function (key) {
@@ -3335,30 +3361,7 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
 }
 
 module.exports = _applyDecoratedDescriptor;
-
-/***/ }),
-
-/***/ (function(module, exports) {
-
-function _extends() {
-  module.exports = _extends = Object.assign || function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-
-  return _extends.apply(this, arguments);
-}
-
-module.exports = _extends;
+module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
 
@@ -3379,7 +3382,7 @@ var ReactDOM = __webpack_require__(6);
 
 
 
-var ContactsUI = __webpack_require__(3);
+var ContactsUI = __webpack_require__(4);
 
 class ExtraFooterElement extends _stores_mixins_js1__["MegaRenderMixin"] {
   render() {
@@ -3826,7 +3829,7 @@ __webpack_require__.d(__webpack_exports__, "ConversationMessageMixin", function(
 var react0__ = __webpack_require__(0);
 var react0 = __webpack_require__.n(react0__);
 var _stores_mixins_js1__ = __webpack_require__(1);
-var _ui_buttons_jsx2__ = __webpack_require__(4);
+var _ui_buttons_jsx2__ = __webpack_require__(3);
 var _ui_emojiDropdown_jsx3__ = __webpack_require__(14);
 
 
@@ -4207,7 +4210,7 @@ class ConversationMessageMixin extends _stores_mixins_js1__["ContactAwareCompone
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 __webpack_require__.d(__webpack_exports__, "PerfectScrollbar", function() { return PerfectScrollbar; });
-var _applyDecoratedDescriptor0__ = __webpack_require__(7);
+var _applyDecoratedDescriptor0__ = __webpack_require__(8);
 var _applyDecoratedDescriptor0 = __webpack_require__.n(_applyDecoratedDescriptor0__);
 var _stores_mixins_js1__ = __webpack_require__(1);
 
@@ -6498,7 +6501,7 @@ __webpack_exports__["a"] = ({
 
 "use strict";
 __webpack_require__.d(__webpack_exports__, "a", function() { return DropdownEmojiSelector; });
-var _extends0__ = __webpack_require__(8);
+var _extends0__ = __webpack_require__(7);
 var _extends0 = __webpack_require__.n(_extends0__);
 var _stores_mixins_js1__ = __webpack_require__(1);
 
@@ -7175,11 +7178,11 @@ class MetaRichpreviewLoading extends ConversationMessageMixin {
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/extends.js
-var helpers_extends = __webpack_require__(8);
+var helpers_extends = __webpack_require__(7);
 var extends_default = __webpack_require__.n(helpers_extends);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/applyDecoratedDescriptor.js
-var applyDecoratedDescriptor = __webpack_require__(7);
+var applyDecoratedDescriptor = __webpack_require__(8);
 var applyDecoratedDescriptor_default = __webpack_require__.n(applyDecoratedDescriptor);
 
 // EXTERNAL MODULE: ./js/ui/utils.jsx
@@ -7189,7 +7192,7 @@ var utils = __webpack_require__(5);
 var mixins = __webpack_require__(1);
 
 // EXTERNAL MODULE: ./js/ui/buttons.jsx
-var ui_buttons = __webpack_require__(4);
+var ui_buttons = __webpack_require__(3);
 
 // EXTERNAL MODULE: ./js/ui/dropdowns.jsx
 var ui_dropdowns = __webpack_require__(2);
@@ -7491,12 +7494,12 @@ var perfectScrollbar = __webpack_require__(11);
 
 
 
-var _dec, _class, _temp;
+var _dec, _class;
 
 
 
 
-let megaList2_MegaList2 = (_dec = Object(mixins["SoonFcWrap"])(30, true), (_class = (_temp = class MegaList2 extends mixins["MegaRenderMixin"] {
+let megaList2_MegaList2 = (_dec = Object(mixins["SoonFcWrap"])(30, true), (_class = class MegaList2 extends mixins["MegaRenderMixin"] {
   constructor(props) {
     super(props);
     this._calculated = false;
@@ -7836,7 +7839,7 @@ let megaList2_MegaList2 = (_dec = Object(mixins["SoonFcWrap"])(30, true), (_clas
     }, listAdapterOpts), nodes)));
   }
 
-}, _temp), (applyDecoratedDescriptor_default()(_class.prototype, "onPsUserScroll", [_dec], Object.getOwnPropertyDescriptor(_class.prototype, "onPsUserScroll"), _class.prototype)), _class));
+}, (applyDecoratedDescriptor_default()(_class.prototype, "onPsUserScroll", [_dec], Object.getOwnPropertyDescriptor(_class.prototype, "onPsUserScroll"), _class.prototype)), _class));
 // CONCATENATED MODULE: ./js/ui/jsx/fm/nodes/nodeProperties.jsx
 class NodeProperties {
   static get(node, changeListener) {
@@ -8936,7 +8939,7 @@ class fmView_FMView extends mixins["MegaRenderMixin"] {
       const sortId = props.fmConfigSortId;
       assert(sortId, 'missing fmConfigSortId');
 
-      if ((_fmconfig$sortmodes = fmconfig.sortmodes) == null ? void 0 : (_fmconfig$sortmodes$s = _fmconfig$sortmodes[sortId]) == null ? void 0 : _fmconfig$sortmodes$s.n) {
+      if ((_fmconfig$sortmodes = fmconfig.sortmodes) != null && (_fmconfig$sortmodes$s = _fmconfig$sortmodes[sortId]) != null && _fmconfig$sortmodes$s.n) {
         var _fmconfig$sortmodes2;
 
         initialSortBy = this._translateFmConfigSortMode((_fmconfig$sortmodes2 = fmconfig.sortmodes) == null ? void 0 : _fmconfig$sortmodes2[sortId]);
@@ -8960,7 +8963,7 @@ class fmView_FMView extends mixins["MegaRenderMixin"] {
     this.onAttachClicked = this.onAttachClicked.bind(this);
     this.onContextMenu = this.onContextMenu.bind(this);
 
-    if ((_this$dataSource = this.dataSource) == null ? void 0 : _this$dataSource.addChangeListener) {
+    if ((_this$dataSource = this.dataSource) != null && _this$dataSource.addChangeListener) {
       this._listener = this.dataSource.addChangeListener(() => {
         if (!this.isMounted()) {
           return;
@@ -8980,7 +8983,7 @@ class fmView_FMView extends mixins["MegaRenderMixin"] {
     assert(sortId, 'missing fmConfigSortId');
     const sortByArr = [];
 
-    if (currentSortModes == null ? void 0 : currentSortModes.n) {
+    if (currentSortModes != null && currentSortModes.n) {
       sortByArr[0] = currentSortModes.n;
       const sortMap = this.props.fmConfigSortMap;
       const aliasKeys = sortMap && Object.keys(sortMap) || [];
@@ -9142,7 +9145,7 @@ class fmView_FMView extends mixins["MegaRenderMixin"] {
 
     super.componentDidMount();
 
-    if (!((_this$dataSource2 = this.dataSource) == null ? void 0 : _this$dataSource2.addChangeListener)) {
+    if (!((_this$dataSource2 = this.dataSource) != null && _this$dataSource2.addChangeListener)) {
       this.addOrUpdRawListener();
     }
 
@@ -9162,7 +9165,7 @@ class fmView_FMView extends mixins["MegaRenderMixin"] {
         'highlighted': []
       };
 
-      if (!((_this$dataSource3 = this.dataSource) == null ? void 0 : _this$dataSource3.addChangeListener)) {
+      if (!((_this$dataSource3 = this.dataSource) != null && _this$dataSource3.addChangeListener)) {
         this.addOrUpdRawListener();
       }
 
@@ -9958,7 +9961,7 @@ function CustomRadioButton({
   })));
 }
 // EXTERNAL MODULE: ./js/chat/ui/contacts.jsx
-var ui_contacts = __webpack_require__(3);
+var ui_contacts = __webpack_require__(4);
 
 // EXTERNAL MODULE: ./js/ui/emojiDropdown.jsx
 var emojiDropdown = __webpack_require__(14);
@@ -9970,7 +9973,7 @@ var ReactDOM = __webpack_require__(6);
 
 
 
-var ButtonsUI = __webpack_require__(4);
+var ButtonsUI = __webpack_require__(3);
 
 class emojiAutocomplete_EmojiAutocomplete extends mixins["MegaRenderMixin"] {
   constructor(props) {
@@ -10347,11 +10350,11 @@ class resultContainer_ResultContainer extends mixins["MegaRenderMixin"] {
             const entry = entries[i];
             const target = entry.target;
 
-            if ((_target$classList = target.classList) == null ? void 0 : _target$classList.contains(NODE_CLASS)) {
+            if ((_target$classList = target.classList) != null && _target$classList.contains(NODE_CLASS)) {
               target.style.backgroundImage = entry.isIntersecting ? "url(" + target.dataset.url + ")" : null;
             }
 
-            if (entry.isIntersecting && ((_target$classList2 = target.classList) == null ? void 0 : _target$classList2.contains(RESULTS_END_CLASS))) {
+            if (entry.isIntersecting && (_target$classList2 = target.classList) != null && _target$classList2.contains(RESULTS_END_CLASS)) {
               this.props.onPaginate();
             }
           }
@@ -10694,7 +10697,7 @@ class gifPanel_GifPanel extends mixins["MegaRenderMixin"] {
 // CONCATENATED MODULE: ./js/chat/ui/typingArea.jsx
 
 
-var typingArea_dec, _dec2, typingArea_class, _class2, typingArea_temp;
+var typingArea_dec, _dec2, typingArea_class, _class2, _temp;
 
 var typingArea_React = __webpack_require__(0);
 
@@ -10705,7 +10708,7 @@ var typingArea_ReactDOM = __webpack_require__(6);
 
 
 
-let typingArea_TypingArea = (typingArea_dec = Object(mixins["SoonFcWrap"])(60), _dec2 = Object(mixins["SoonFcWrap"])(54, true), (typingArea_class = (typingArea_temp = _class2 = class TypingArea extends mixins["MegaRenderMixin"] {
+let typingArea_TypingArea = (typingArea_dec = Object(mixins["SoonFcWrap"])(60), _dec2 = Object(mixins["SoonFcWrap"])(54, true), (typingArea_class = (_temp = _class2 = class TypingArea extends mixins["MegaRenderMixin"] {
   constructor(props) {
     super(props);
     var initialText = this.props.initialText;
@@ -11500,7 +11503,7 @@ let typingArea_TypingArea = (typingArea_dec = Object(mixins["SoonFcWrap"])(60), 
 
 }, _class2.defaultProps = {
   'textareaMaxHeight': "40%"
-}, typingArea_temp), (applyDecoratedDescriptor_default()(typingArea_class.prototype, "updateScroll", [typingArea_dec], Object.getOwnPropertyDescriptor(typingArea_class.prototype, "updateScroll"), typingArea_class.prototype), applyDecoratedDescriptor_default()(typingArea_class.prototype, "handleWindowResize", [_dec2], Object.getOwnPropertyDescriptor(typingArea_class.prototype, "handleWindowResize"), typingArea_class.prototype)), typingArea_class));
+}, _temp), (applyDecoratedDescriptor_default()(typingArea_class.prototype, "updateScroll", [typingArea_dec], Object.getOwnPropertyDescriptor(typingArea_class.prototype, "updateScroll"), typingArea_class.prototype), applyDecoratedDescriptor_default()(typingArea_class.prototype, "handleWindowResize", [_dec2], Object.getOwnPropertyDescriptor(typingArea_class.prototype, "handleWindowResize"), typingArea_class.prototype)), typingArea_class));
 // CONCATENATED MODULE: ./js/chat/ui/whosTyping.jsx
 var whosTyping_React = __webpack_require__(0);
 
@@ -11726,7 +11729,7 @@ class accordion_Accordion extends mixins["MegaRenderMixin"] {
 
 var DropdownsUI = __webpack_require__(2);
 
-var ContactsUI = __webpack_require__(3);
+var ContactsUI = __webpack_require__(4);
 
 var PerfectScrollbar = __webpack_require__(11).PerfectScrollbar;
 
@@ -13869,7 +13872,61 @@ class giphy_Giphy extends abstractGenericMessage_AbstractGenericMessage {
   }
 
 }
+// CONCATENATED MODULE: ./js/chat/ui/messages/types/chessmove.jsx
+
+
+
+
+
+class chessmove_ChessMove extends abstractGenericMessage_AbstractGenericMessage {
+  constructor(props) {
+    super(props);
+    this.gifRef = external_React_default.a.createRef();
+    this.state = {
+      src: undefined
+    };
+  }
+
+  onVisibilityChange() {
+    return null;
+  }
+
+  getMessageActionButtons() {
+    const {
+      onDelete,
+      message
+    } = this.props;
+    const $$BUTTONS = [message.isEditable() && external_React_default.a.createElement(ui_buttons["Button"], {
+      key: "delete-CHESS-button",
+      className: "tiny-button",
+      icon: "sprite-fm-mono icon-options"
+    }, external_React_default.a.createElement(ui_dropdowns["Dropdown"], {
+      className: "white-context-menu attachments-dropdown",
+      noArrow: true,
+      positionMy: "left bottom",
+      positionAt: "right bottom",
+      horizOffset: 4
+    }, external_React_default.a.createElement(ui_dropdowns["DropdownItem"], {
+      icon: "sprite-fm-mono icon-dialog-close",
+      label: l[1730],
+      onClick: e => onDelete(e, message)
+    }))), super.getMessageActionButtons && super.getMessageActionButtons()];
+    return $$BUTTONS.filter(button => button);
+  }
+
+  getContents() {
+    const {
+      message,
+      hideActionButtons
+    } = this.props;
+    return external_React_default.a.createElement("div", {
+      className: "message text-block"
+    }, external_React_default.a.createElement("span", null, "Some Chess Move! ", message.meta.ryan || "Unknown Ryan"));
+  }
+
+}
 // CONCATENATED MODULE: ./js/chat/ui/messages/generic.jsx
+
 
 
 
@@ -14247,6 +14304,7 @@ class generic_GenericConversationMessage extends mixin["ConversationMessageMixin
         REVOKE_ATTACHMENT: textContents[1] === Message.MANAGEMENT_MESSAGE_TYPES.REVOKE_ATTACHMENT,
         VOICE_CLIP: textContents[1] === Message.MANAGEMENT_MESSAGE_TYPES.VOICE_CLIP,
         GIPHY: message.metaType && message.metaType === Message.MESSAGE_META_TYPE.GIPHY,
+        CHESS: message.metaType && message.metaType === Message.MESSAGE_META_TYPE.CHESS,
         TEXT: textContents[0] !== Message.MANAGEMENT_MESSAGE_TYPES.MANAGEMENT,
         INLINE: !(message instanceof Message) && message.type && !!message.type.length,
         REVOKED: message.revoked
@@ -14290,6 +14348,11 @@ class generic_GenericConversationMessage extends mixin["ConversationMessageMixin
           onDelete: MESSAGE.onDelete
         }));
 
+      case MESSAGE.TYPE.CHESS:
+        return external_React_default.a.createElement(chessmove_ChessMove, extends_default()({}, MESSAGE.props, {
+          onDelete: MESSAGE.onDelete
+        }));
+
       case MESSAGE.TYPE.TEXT:
         return external_React_default.a.createElement(text_Text, extends_default()({}, MESSAGE.props, {
           onEditToggle: editing => this.setState({
@@ -14311,7 +14374,7 @@ class generic_GenericConversationMessage extends mixin["ConversationMessageMixin
 // CONCATENATED MODULE: ./js/chat/ui/messages/alterParticipants.jsx
 var alterParticipants_React = __webpack_require__(0);
 
-var alterParticipants_ContactsUI = __webpack_require__(3);
+var alterParticipants_ContactsUI = __webpack_require__(4);
 
 var alterParticipants_ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
@@ -14458,7 +14521,7 @@ class AltPartsConvMessage extends alterParticipants_ConversationMessageMixin {
 // CONCATENATED MODULE: ./js/chat/ui/messages/truncated.jsx
 var truncated_React = __webpack_require__(0);
 
-var truncated_ContactsUI = __webpack_require__(3);
+var truncated_ContactsUI = __webpack_require__(4);
 
 var truncated_ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
@@ -14521,7 +14584,7 @@ class TruncatedMessage extends truncated_ConversationMessageMixin {
 // CONCATENATED MODULE: ./js/chat/ui/messages/privilegeChange.jsx
 var privilegeChange_React = __webpack_require__(0);
 
-var privilegeChange_ContactsUI = __webpack_require__(3);
+var privilegeChange_ContactsUI = __webpack_require__(4);
 
 var privilegeChange_ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
@@ -14608,7 +14671,7 @@ class PrivilegeChange extends privilegeChange_ConversationMessageMixin {
 // CONCATENATED MODULE: ./js/chat/ui/messages/topicChange.jsx
 var topicChange_React = __webpack_require__(0);
 
-var topicChange_ContactsUI = __webpack_require__(3);
+var topicChange_ContactsUI = __webpack_require__(4);
 
 var topicChange_ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
@@ -15120,7 +15183,7 @@ class incomingSharesAccordionPanel_IncSharesAccordionPanel extends mixins["MegaR
 // CONCATENATED MODULE: ./js/chat/ui/messages/closeOpenMode.jsx
 var closeOpenMode_React = __webpack_require__(0);
 
-var closeOpenMode_ContactsUI = __webpack_require__(3);
+var closeOpenMode_ContactsUI = __webpack_require__(4);
 
 var closeOpenMode_ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
@@ -15185,7 +15248,7 @@ var chatHandle_ReactDOM = __webpack_require__(6);
 
 var chatHandle_utils = __webpack_require__(5);
 
-var chatHandle_ContactsUI = __webpack_require__(3);
+var chatHandle_ContactsUI = __webpack_require__(4);
 
 var chatHandle_ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
@@ -16621,7 +16684,7 @@ pushSettingsDialog_PushSettingsDialog.default = pushSettingsDialog_PushSettingsD
 // CONCATENATED MODULE: ./js/chat/ui/conversationpanel.jsx
 
 
-var conversationpanel_dec, conversationpanel_dec2, _dec3, _dec4, conversationpanel_class, conversationpanel_temp;
+var conversationpanel_dec, conversationpanel_dec2, _dec3, _dec4, conversationpanel_class;
 
 
 
@@ -17110,7 +17173,7 @@ class conversationpanel_ConversationRightArea extends mixins["MegaRenderMixin"] 
 conversationpanel_ConversationRightArea.defaultProps = {
   'requiresUpdateOnResize': true
 };
-let conversationpanel_ConversationPanel = (conversationpanel_dec = utils["default"].SoonFcWrap(360), conversationpanel_dec2 = utils["default"].SoonFcWrap(50), _dec3 = Object(mixins["SoonFcWrap"])(450, true), _dec4 = Object(mixins["timing"])(0.7, 9), (conversationpanel_class = (conversationpanel_temp = class ConversationPanel extends mixins["MegaRenderMixin"] {
+let conversationpanel_ConversationPanel = (conversationpanel_dec = utils["default"].SoonFcWrap(360), conversationpanel_dec2 = utils["default"].SoonFcWrap(50), _dec3 = Object(mixins["SoonFcWrap"])(450, true), _dec4 = Object(mixins["timing"])(0.7, 9), (conversationpanel_class = class ConversationPanel extends mixins["MegaRenderMixin"] {
   constructor(props) {
     super(props);
 
@@ -18658,7 +18721,7 @@ let conversationpanel_ConversationPanel = (conversationpanel_dec = utils["defaul
     }))))))));
   }
 
-}, conversationpanel_temp), (applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "onMouseMove", [conversationpanel_dec], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "onMouseMove"), conversationpanel_class.prototype), applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "onMessagesScrollReinitialise", [conversationpanel_dec2], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "onMessagesScrollReinitialise"), conversationpanel_class.prototype), applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "enableScrollbar", [_dec3], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "enableScrollbar"), conversationpanel_class.prototype), applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "render", [_dec4], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "render"), conversationpanel_class.prototype)), conversationpanel_class));
+}, (applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "onMouseMove", [conversationpanel_dec], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "onMouseMove"), conversationpanel_class.prototype), applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "onMessagesScrollReinitialise", [conversationpanel_dec2], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "onMessagesScrollReinitialise"), conversationpanel_class.prototype), applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "enableScrollbar", [_dec3], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "enableScrollbar"), conversationpanel_class.prototype), applyDecoratedDescriptor_default()(conversationpanel_class.prototype, "render", [_dec4], Object.getOwnPropertyDescriptor(conversationpanel_class.prototype, "render"), conversationpanel_class.prototype)), conversationpanel_class));
 class conversationpanel_ConversationPanels extends mixins["MegaRenderMixin"] {
   render() {
     var self = this;
@@ -20859,7 +20922,7 @@ contactsPanel_ContactsPanel.getUserFingerprint = handle => {
 
 
 
-var conversations_dec, conversations_dec2, conversations_class, conversations_dec3, conversations_class2, conversations_temp;
+var conversations_dec, conversations_dec2, conversations_class, conversations_dec3, conversations_class2;
 
 
 
@@ -21693,7 +21756,7 @@ class conversations_ArchivedConversationsList extends mixins["MegaRenderMixin"] 
 
 }
 
-let conversations_ConversationsApp = (conversations_dec3 = utils["default"].SoonFcWrap(80), (conversations_class2 = (conversations_temp = class ConversationsApp extends mixins["MegaRenderMixin"] {
+let conversations_ConversationsApp = (conversations_dec3 = utils["default"].SoonFcWrap(80), (conversations_class2 = class ConversationsApp extends mixins["MegaRenderMixin"] {
   constructor(props) {
     super(props);
 
@@ -22090,7 +22153,7 @@ let conversations_ConversationsApp = (conversations_dec3 = utils["default"].Soon
     }, archivedChatsCount)))), rightPane);
   }
 
-}, conversations_temp), (applyDecoratedDescriptor_default()(conversations_class2.prototype, "handleWindowResize", [conversations_dec3], Object.getOwnPropertyDescriptor(conversations_class2.prototype, "handleWindowResize"), conversations_class2.prototype)), conversations_class2));
+}, (applyDecoratedDescriptor_default()(conversations_class2.prototype, "handleWindowResize", [conversations_dec3], Object.getOwnPropertyDescriptor(conversations_class2.prototype, "handleWindowResize"), conversations_class2.prototype)), conversations_class2));
 
 if (false) {}
 
@@ -22160,7 +22223,7 @@ var external_React_default = __webpack_require__.n(external_React_);
 var external_ReactDOM_ = __webpack_require__(6);
 var external_ReactDOM_default = __webpack_require__.n(external_ReactDOM_);
 
-// EXTERNAL MODULE: ./js/chat/ui/conversations.jsx + 78 modules
+// EXTERNAL MODULE: ./js/chat/ui/conversations.jsx + 79 modules
 var conversations = __webpack_require__(18);
 
 // CONCATENATED MODULE: ./js/chat/chatRouting.jsx
@@ -24711,7 +24774,7 @@ var miniui = ({
   IntermediateCheckbox: miniui_IntermediateCheckbox
 });
 // EXTERNAL MODULE: ./js/chat/ui/contacts.jsx
-var ui_contacts = __webpack_require__(3);
+var ui_contacts = __webpack_require__(4);
 
 // EXTERNAL MODULE: ./js/ui/modalDialogs.jsx
 var modalDialogs = __webpack_require__(9);

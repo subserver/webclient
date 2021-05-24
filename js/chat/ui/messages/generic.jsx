@@ -6,6 +6,7 @@ import Attachment from './types/attachment.jsx';
 import VoiceClip from './types/voiceClip.jsx';
 import Text from './types/text.jsx';
 import Giphy from './types/giphy.jsx';
+import ChessMove from "./types/chessmove.jsx";
 import { DropdownItem } from '../../../ui/dropdowns.jsx';
 
 
@@ -422,6 +423,7 @@ export default class GenericConversationMessage extends ConversationMessageMixin
                 REVOKE_ATTACHMENT: textContents[1] === Message.MANAGEMENT_MESSAGE_TYPES.REVOKE_ATTACHMENT,
                 VOICE_CLIP: textContents[1] === Message.MANAGEMENT_MESSAGE_TYPES.VOICE_CLIP,
                 GIPHY: message.metaType && message.metaType === Message.MESSAGE_META_TYPE.GIPHY,
+                CHESS: message.metaType && message.metaType === Message.MESSAGE_META_TYPE.CHESS,
                 TEXT: textContents[0] !== Message.MANAGEMENT_MESSAGE_TYPES.MANAGEMENT,
                 INLINE: !(message instanceof Message) && message.type && !!message.type.length,
                 REVOKED: message.revoked
@@ -467,6 +469,13 @@ export default class GenericConversationMessage extends ConversationMessageMixin
             case MESSAGE.TYPE.GIPHY:
                 return (
                     <Giphy
+                        {...MESSAGE.props}
+                        onDelete={MESSAGE.onDelete}
+                    />
+                );
+            case MESSAGE.TYPE.CHESS:
+                return (
+                    <ChessMove
                         {...MESSAGE.props}
                         onDelete={MESSAGE.onDelete}
                     />

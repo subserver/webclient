@@ -588,7 +588,8 @@ Message.MANAGEMENT_MESSAGE_TYPES = {
 Message.MESSAGE_META_TYPE = {
     "RICH_PREVIEW": "\x00",
     "GEOLOCATION": "\x01",
-    "GIPHY": "\x03"
+    "GIPHY": "\x03",
+    "CHESS": "\x69"
 };
 
 Message._stateToText = Object.create(null);

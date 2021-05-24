@@ -928,6 +928,9 @@ ChatdIntegration.prototype._parseMessage = function(chatRoom, message) {
                 else if (origTextContents[2] === Message.MESSAGE_META_TYPE.GIPHY) {
                     message.metaType = Message.MESSAGE_META_TYPE.GIPHY;
                 }
+                else if (origTextContents[2] === Message.MESSAGE_META_TYPE.CHESS) {
+                    message.metaType = Message.MESSAGE_META_TYPE.CHESS;
+                }
                 else {
                     message.metaType = -1;
                 }
