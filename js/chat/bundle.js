@@ -13273,7 +13273,7 @@ class MetaRichprevConfirmation extends metaRichpreviewConfirmation_ConversationM
     }, metaRichpreviewConfirmation_React.createElement("div", {
       className: "message richpreview img-wrapper"
     }, metaRichpreviewConfirmation_React.createElement("div", {
-      className: " message richpreview preview-confirmation sprite-fm-illustration img-chat-url-preview "
+      className: "\r message\r richpreview\r preview-confirmation\r sprite-fm-illustration\r img-chat-url-preview\r "
     })), metaRichpreviewConfirmation_React.createElement("div", {
       className: "message richpreview inner-wrapper"
     }, metaRichpreviewConfirmation_React.createElement("div", {
@@ -13872,6 +13872,50 @@ class giphy_Giphy extends abstractGenericMessage_AbstractGenericMessage {
   }
 
 }
+// CONCATENATED MODULE: ./js/chat/ui/messages/types/partials/chessmoveThumbnail.jsx
+
+
+
+const ChessmoveThumbnail = props => {
+  const canvasRef = Object(external_React_["useRef"])(null);
+  const {
+    boardstate,
+    ...rest
+  } = props;
+
+  const draw = (canvas, ctx) => {
+    console.log("Board State: ", boardstate);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const tileSize = canvas.width / 8;
+
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        ctx.beginPath();
+        ctx.rect(x * tileSize, y * tileSize, tileSize, tileSize);
+        let color = y % 2 === 0 ? x % 2 === 0 ? 0 : 1 : x % 2 === 0 ? 1 : 0;
+        ctx.fillStyle = color === 0 ? "grey" : "brown";
+        ctx.fill();
+      }
+    }
+
+    ctx.beginPath();
+    ctx.lineWidth = "2";
+    ctx.strokeStyle = "black";
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.stroke();
+  };
+
+  Object(external_React_["useEffect"])(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    draw(canvas, context);
+  }, [draw, boardstate]);
+  return external_React_default.a.createElement("canvas", extends_default()({
+    ref: canvasRef
+  }, rest));
+};
+
+var chessmoveThumbnail = (ChessmoveThumbnail);
 // CONCATENATED MODULE: ./js/chat/ui/messages/types/chessmove.jsx
 
 
@@ -13883,12 +13927,8 @@ class chessmove_ChessMove extends abstractGenericMessage_AbstractGenericMessage 
     super(props);
     this.gifRef = external_React_default.a.createRef();
     this.state = {
-      src: undefined
+      buffer: null
     };
-  }
-
-  onVisibilityChange() {
-    return null;
   }
 
   getMessageActionButtons() {
@@ -13920,8 +13960,18 @@ class chessmove_ChessMove extends abstractGenericMessage_AbstractGenericMessage 
       hideActionButtons
     } = this.props;
     return external_React_default.a.createElement("div", {
-      className: "message text-block"
-    }, external_React_default.a.createElement("span", null, "Some Chess Move! ", message.meta.ryan || "Unknown Ryan"));
+      className: "message chessmove chessmove-container"
+    }, external_React_default.a.createElement(chessmoveThumbnail, {
+      width: "120",
+      height: "120",
+      boardstate: message.meta.boardstate || null
+    }), external_React_default.a.createElement("div", {
+      className: "message chessmove-summary-wrapper"
+    }, external_React_default.a.createElement("div", {
+      className: "message chessmove-title"
+    }, message.textContents), external_React_default.a.createElement("div", {
+      className: "message chessmove-descriptor"
+    })));
   }
 
 }
@@ -22223,7 +22273,7 @@ var external_React_default = __webpack_require__.n(external_React_);
 var external_ReactDOM_ = __webpack_require__(6);
 var external_ReactDOM_default = __webpack_require__.n(external_ReactDOM_);
 
-// EXTERNAL MODULE: ./js/chat/ui/conversations.jsx + 79 modules
+// EXTERNAL MODULE: ./js/chat/ui/conversations.jsx + 80 modules
 var conversations = __webpack_require__(18);
 
 // CONCATENATED MODULE: ./js/chat/chatRouting.jsx

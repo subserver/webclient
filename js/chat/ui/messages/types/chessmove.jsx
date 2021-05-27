@@ -2,19 +2,15 @@ import React from 'react';
 import AbstractGenericMessage from '../abstractGenericMessage.jsx';
 import { Button} from '../../../../ui/buttons.jsx';
 import { Dropdown, DropdownItem } from '../../../../ui/dropdowns.jsx';
-import { API } from '../../gifPanel/gifPanel.jsx';
+import ChessmoveThumbnail from "./partials/chessmoveThumbnail";
 
 export default class ChessMove extends AbstractGenericMessage {
     gifRef = React.createRef();
 
-    state = { src: undefined };
+    state = { buffer: null };
 
     constructor(props) {
         super(props);
-    }
-
-    onVisibilityChange(isIntersecting) {
-        return null;
     }
 
     getMessageActionButtons() {
@@ -46,9 +42,16 @@ export default class ChessMove extends AbstractGenericMessage {
     getContents() {
         const { message, hideActionButtons } = this.props;
         return (
-            <div
-                className="message text-block">
-                <span>Some Chess Move! {message.meta.ryan || "Unknown Ryan"}</span>
+            <div className="message chessmove chessmove-container">
+                <ChessmoveThumbnail
+                    width="120"
+                    height="120"
+                    boardstate={message.meta.boardstate || null}
+                />
+                <div className="message chessmove-summary-wrapper">
+                    <div className="message chessmove-title">{message.textContents}</div>
+                    <div className="message chessmove-descriptor"/>
+                </div>
             </div>
         );
     }
