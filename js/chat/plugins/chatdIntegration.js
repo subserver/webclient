@@ -1243,6 +1243,11 @@ ChatdIntegration.prototype._attachToChatRoom = function(chatRoom) {
                             msg.source = Message.SOURCE.CHATD;
                             self._parseMessage(chatRoom, msg);
                             mb.messages.push(msg);
+
+                            // Emit event when a *new* message is received with attached metadata.
+                            if (msg.metaType >= 0) {
+                                chatRoom.messagesBuff.trigger('onMessageWithMeta', msg);
+                            }
                         }
                     })
                     .catch(function(ex) {

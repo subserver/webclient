@@ -1,5 +1,31 @@
 (function(scope) {
 
+    const PIECES = Object.freeze({
+        ROOK: 'Rook',
+        KNIGHT: 'Knight',
+        BISHOP: 'Bishop',
+        QUEEN: 'Queen',
+        KING: 'King',
+        PAWN: 'Pawn'
+    });
+
+    /** Convert FEN character to piece type **/
+    const FENNotation = Object.freeze({
+        'r': PIECES.ROOK,
+        'n': PIECES.KNIGHT,
+        'b': PIECES.BISHOP,
+        'q': PIECES.QUEEN,
+        'k': PIECES.KING,
+        'p': PIECES.PAWN,
+        [PIECES.ROOK]: 'r',
+        [PIECES.KNIGHT]: 'n',
+        [PIECES.BISHOP]: 'b',
+        [PIECES.QUEEN]: 'q',
+        [PIECES.KING]: 'k',
+        [PIECES.PAWN]: 'p',
+    });
+
+    /** Sprites **/
     const sprites = {
         blackBishop: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAADPklEQVRoge2ZzWsTQRiHn25VDLam1gaN9iLooRdFK6kHkYLgScpC60UEDzl4EhEs3rR+Hjz5DwR6EQ9KhXqVXvyCJLUhIPQgnvRktjW1GF3NrofZNW2SzX5MNouYBwaW7Mw7v3d23vl4A126dPkv6AnZ/iRw1np+DsyF3F8ozAJmXZmNUE8gTtPohF3Gw+hQCcMowhEnzoTRYViOVFq8+x5Sn6EwAvwGDGpTyrB+G4lQVyDuAlVqjlSB25Eq8kkSyLDZiY3OZIC9kanzyCTwFecVyy4rgBqRRlfuURt1N0fsOnciUdqCB9QC2s0Js67u/Qj0NuUiLQSrqmqqqurm1PkIdG8iAZRpMZ0KhYJZKBTcptkKsFtGiOyGeA3Y2cqOoigoSstuFGAXcFVSS2BiiJFsiAtVVc1cLmfm83nTJp/Pm7lczmmaGYAGbAsqRuaLjCNGsh1XgR5gkJAOlG7cxMPqVCwWzWKx6HUluxFUzJbAbnjcnQ3D8GNzTzApco7oXirNzMz4sfkzkBJJLuF98/Na0h31wGI/4ljeLid0IjxMPvYg0Gt51GHtmxgGSvg7YzXbQ0rAPhkh7dgDDgNPR0dHD83PzxOLxTw1qlQqTExMsLi4uAxMAe9lRMisWjZFYE7TtOvZbJa+vj5PjdbX19E0DeAZkk60i1OI6RFkehmIQ+PJjqtuwgLeLlOtTr8vZEXIxshAOp1eHRoakjJSKpXIZDJxYE1STzBSqdQ5XddNWXRdN8fGxqZktEgFezab7U8mk8TjcRkzlMtlNE3bIWVEknHatyEe6az0RqYRKVI7cP0EuYlIoU53XLUDCeAK8Arv6aCXwGWrrTR+V61hq+NBq+12xJUXxG1xADgAHAOOAlvr2v8C3gFLwEdE4mLVelcBfiAcXQG+AJ986nNEAS4ABatTPxtdkHf1pQw8AY7LOBEH3uB/7odRqsBDGr+wK73A64jFNysLOCRMnGIkjkhG2xhOBlz4Bnywng8C/QFs1Pc9SC2u/uK0IZYRh8FbiPV9GXgL5BBBWLbq9SISdDZ2Jr4KfLbqbiSBWDAUxCAObHi3ZrUDMZAJIAWcQPw5tITI3DQ40aVLly7/Hn8ABDVYwUK+TtsAAAAASUVORK5CYII=",
         blackKing: "data:image/png;base64,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",
@@ -14,15 +40,21 @@
         whiteQueen: "data:image/png;base64,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",
         whiteRook: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAAC40lEQVRoge2YsWsTURzHP++ZNto7qBwOYrLUdtNzqZhFCh10cdB/oRQcxK2LIE4i0sH1xKlQMhcdnDq0FJcOWXJ0SpBCE8nUpHAtIcX8HNraJLVN7t5Vg9wHHuTuvu/3ft979+7yfpCQkJCQkJCACql/Brzu6fcTWAC+9dEBCPAO+Nxx7iHwAbjSR3chqUGFxzwG7k9NTTE+Po7v+7RaLYAndBvp0gHs7e1RLpdPrvUaeTA6OorruhfpYsUDpNFoiIhIsVgUju6eAJ86mnTqREQajcaF2mKx2KvzwiQWdka6yGQynYfPOw8cxxHLsn4/WpZl4TiO7O7uql7tH2KFxsiI4zg0m00ODg7OXLNtW6VSp+FTqRS1Wk0FQXBGOzY2RjqdNkkltJFrAOvr61iWZTTweezv73eNdVlscfqcX3bbCpNY2NfvtFJqFbg+NzencrlcyO4Xs7m5ydLSkgANEXkEFGIdoIcJrfWO1rqdz+clLvL5vGit21rrHWAibFJhZ+SE21rrDdu2M9lstj0yMhIxzBGHh4dUKhUdBEG13W7PAN+NAoZkHhDP84xnw/O8k3UxHzUZbWCkZtA39pgmRoaKxMiwkRgZNhIjw0ZiZNj4b4wY7RAB6vU69XrdOIYpJkbuKqVYXl5mZWXFKIkgCFBKISJ3gK9GwUIyopQqp9Np2d7eNv73WygUBBClVBmItCeIMiOjgCcik7lcjlKpRKlUijJ2FzMzM2xsbEwCH4EXQMs4aB9ecvn79YWwSUWZERtgdnbWuBbVS7VaZW1tDeBGrIHP4RUdlcE46ahcvg+b1H/zHRm0+PAGeHr8+yaQOSk6x0lHUbwGVI9PfwHe9us7qJEi4E5PTxMEAZVKBRGJlGzfhJQim81i2zaFQgHAB+7FFb/oum7sa6IfrusKRzexLwO/tXzfZ3FxMfKdiILv+7HHXOXv1Xx72+ogCQ66Rq4CtwbUxs0PoPmPxk5ISBg2fgEmGtoDZBTybwAAAABJRU5ErkJggg=="
     };
-    const FENNotation = {
-        'r': 'Rook',
-        'n': 'Knight',
-        'b': 'Bishop',
-        'q': 'Queen',
-        'k': 'King',
-        'p': 'Pawn'
+
+    const EMPTY = '.';
+
+    const DIRECTION = {
+        UP_LEFT: {rank: 1, file: -1},
+        UP_RIGHT: {rank: 1, file: 1},
+        DOWN_LEFT: {rank: -1, file: -1},
+        DOWN_RIGHT: {rank: -1, file: 1},
+        LEFT: {rank: 0, file: -1},
+        RIGHT: {rank: 0, file: 1},
+        UP: {rank: 1, file: 0},
+        DOWN: {rank: -1, file: 0}
     };
 
+    /** Send a new game invite **/
     scope.sendInvite = function(roomhandle, note) {
         note = note || "Lets have a game of chess!";
         let chatroom = megaChat.getChatById(roomhandle);
@@ -42,6 +74,7 @@
         }));
     };
 
+    /** Send a move based on an existing game **/
     scope.sendMove = function(roomhandle, responseto, boardstate, move, note) {
         note = note || null;
         let chatroom = megaChat.getChatById(roomhandle);
@@ -63,7 +96,11 @@
         }));
     }
 
-    scope.renderpreview = async function (canvas, ctx, previousstate, currentstate, move) {
+    /**
+     * Render a preview thumbnail for the inchat feed
+     * perspective: white is 0, black is 1
+     **/
+    scope.renderpreview = async function (canvas, ctx, previousstate, currentstate, move, perspective = 0) {
         const renderings = [];
 
         // Draw the tiles.
@@ -85,53 +122,472 @@
         ctx.rect(0, 0, canvas.width, canvas.height);
         ctx.stroke();
 
-        // Render the pieces.
-        let parts = currentstate.split(' ');
-        let ranks = parts[0].split('/');
-        for (let rank = 0; rank < ranks.length; rank++) {
-            let file = 0;
-            for (let i = 0; i < ranks[rank].length; i++) {
-                let ascii = ranks[rank].charCodeAt(i);
-                if (ascii >= 48 && ascii <= 57) file += parseInt(ranks[rank][i]);
-                else {
-                    let type;
-                    let white = false;
+        fenplacementiterator(currentstate, item => {
+            // Calculate some render specs.
+            let tileColor = (item.rank % 2 === 0) ? (item.file % 2 === 0 ? 0 : 1) : (item.file % 2 === 0 ? 1 : 0);
+            let sprite = sprites[(item.white ? 'white' : 'black') + item.type];
+            /**
+             * In order to correctly render different perspectives, we need to alter the rank/file.
+             * If white perspective, then we render lower ranks further away
+             * if black perspective, then we render higher ranks further away.
+             */
+            let render_rank = perspective ? item.rank : 7 - item.rank;
+            let render_file = perspective ? 7 - item.file : item.file;
+            let pos = {
+                y: ((render_rank) * tileSize) + (tileSize / 2),
+                x: (render_file * tileSize) + (tileSize / 2),
+            };
 
-                    // Determine white / black and piece type.
-                    if (ascii >= 65 && ascii <= 90) {
-                        white = true;
-                        type = FENNotation[ranks[rank][i].toLowerCase()] || null;
-                    }
-                    else if (ascii >= 97 && ascii <= 122) type = FENNotation[ranks[rank][i].toLowerCase()] || null;
-
-                    // If valid, then render item.
-                    if (type) {
-                        // Calculate some render specs.
-                        let tileColor = (rank % 2 === 0) ? (file % 2 === 0 ? 0 : 1) : (file % 2 === 0 ? 1 : 0);
-                        let pos = { y: (rank * tileSize) + (tileSize / 2), x: (file * tileSize) + (tileSize / 2)};
-                        let sprite = sprites[(white ? 'white' : 'black') + type];
-
-                        if (sprite) {
-                            renderings.push(drawimg(canvas, ctx, pos, {w: tileSize, h: tileSize}, sprite));
-                        }
-                        else {
-                            context.font = "10px Arial";
-                            context.textAlign = "center";
-                            context.fillStyle = (tileColor === 0 ? "black" : "white");
-                            context.fillText(ranks[rank][file], pos.x, pos.y);
-                        }
-                    }
-                    file++;
-                }
+            if (sprite) {
+                renderings.push(drawimg(canvas, ctx, pos, {w: tileSize, h: tileSize}, sprite));
             }
-        }
+            else {
+                ctx.font = "10px Arial";
+                ctx.textAlign = "center";
+                ctx.fillStyle = (item.white ? "white" : "black");
+                ctx.fillText(item.fen, pos.x, pos.y);
+            }
+        });
 
-        //Render the last move.
+        // Render the last move.
+        // TODO.
 
         // Wait for all rendering to settle or errors.
         return Promise.all(renderings);
     }
 
+    /** Load a board state into a game instance **/
+    scope.load = function(chatmessage) {
+        return new MEGAChess(chatmessage);
+    }
+
+    /** Create the MEGAChess object for storing gamestate. **/
+    function MEGAChess(chatmessage) {
+        if (!ischessmsg(chatmessage)) return new ChessError("Not a chess message.", chatmessage);
+        this.spawnmessage = chatmessage;
+
+        // Load in board state.
+        this.board = Array(8 * 8).fill(EMPTY);
+        this.fenstate = parseFEN(chatmessage.meta.boardstate);
+        fenplacementiterator(this.fenstate.placement, item => {
+            this.board[item.rank * 8 + item.file] = item.fen;
+        });
+
+        this.turn = this.fenstate.turn;
+    }
+
+    /** Alter the gamestate with move. **/
+    MEGAChess.prototype.makemove = function (move) {
+        if (!this.isValidMove(move)) return new ChessError("Invalid move", move);
+        /**
+         * 1. Commit the move
+         * 2. Send the move to the channel
+         * 3. Trigger UI update.
+         */
+    };
+
+    /** Check if a move is valid **/
+    MEGAChess.prototype.isValidMove = function(move, morphscan = true) {
+        // Within the bounds of the game.
+        if (move.to < 0 || move.to > 63) return false;
+
+        const pos_data = moveposdata(move);
+
+        const piece = FENChar(this.board[move.from]);
+        if (!piece) return false;
+
+        if (!this._validMovement(move, piece, pos_data)) return false;
+        if (morphscan) {
+            const step = calculateDirectionPos(pos_data);
+            if (this._morphScan(step, move.from, move.to) !== move.to) return false;
+        }
+        return true;
+    };
+
+    /** Check that the pieces are moving correctly **/
+    MEGAChess.prototype._validMovement = function(move, piece, pos_data) {
+        const capturing = this.board[move.to] !== EMPTY;
+        if (capturing) {
+            let other = FENChar(this.board[move.to]);
+            if (!other || piece.white === other.white) return false;
+        }
+
+        const distance = pos_data.distance;
+        const modify = function (modifier) {
+            distance.rank = modifier(distance.rank);
+            distance.file = modifier(distance.file);
+        };
+
+        switch (piece.type)
+        {
+            case PIECES.ROOK:
+                modify(Math.abs);
+                if (distance.rank > 0 && distance.file === 0) return true;
+                if (distance.file > 0 && distance.rank === 0) return true;
+                break;
+
+            case PIECES.KNIGHT:
+                modify(Math.abs);
+                if (distance.rank === 1 && distance.file === 2) return true;
+                if (distance.rank === 2 && distance.file === 1) return true;
+                break;
+
+            case PIECES.BISHOP:
+                modify(Math.abs);
+                if (distance.rank === distance.file) return true;
+                break;
+
+            case PIECES.QUEEN:
+                modify(Math.abs);
+                if (distance.rank === distance.file) return true;
+                if (distance.rank > 0 && distance.file === 0) return true;
+                if (distance.file > 0 && distance.rank === 0) return true;
+                break;
+
+            case PIECES.KING:
+                modify(Math.abs);
+                return !(distance.rank > 1 || distance.file > 1);
+
+            case PIECES.PAWN:
+                /**
+                 * Pawns can only move "forward", this would be mean legal moves: {black: -1, white: +1}.
+                 * To simply the logic, movement has been converted to the pieces native type,
+                 * so +1 means "forward" and -1 means "backwards" in relation to the pawns colour and starting point.
+                 *
+                 * We also need to know if this is the first move for the pawn,
+                 * we can tell this by checking if the from position is on the starting rank.
+                 */
+                let first = false;
+                if (piece.white) first = pos_data.from.rank === 1;
+                else {
+                    first = pos_data.from.rank === 6;
+                    distance.rank = -distance.rank;
+                }
+
+                if (distance.file === 0) {
+                    if (distance.rank === 1 && !capturing) return true;
+                    if (distance.rank === 2 && first && !capturing) return true;
+                }
+
+                if (distance.rank === 1 && Math.abs(distance.file) === 1) {
+                    if (capturing) return true;
+                    if (this.fenstate.enpassant) {
+                        if (move.to === notation2idx(this.fenstate.enpassant)) return true;
+                    }
+                }
+                break;
+        }
+
+        return false;
+    };
+
+    /**
+     * Scan in a direction until:
+     *   - Out of bounds
+     *   - Encounter another piece
+     *   - Reach dest (if provided)
+     *
+     *   Returns the position of the first issue discovered. (possibly out of bounds!).
+     **/
+    MEGAChess.prototype._morphScan = function (step, start, dest = null) {
+        let discover = this._morphDiscover(step, start, dest);
+        let pos;
+        do {
+            pos = discover.next();
+        } while (!pos.done);
+        return pos.value;
+    };
+
+    /** Scan in a direction returning all valid moves until an invalid move is encounter **/
+    MEGAChess.prototype._morphDiscover = function* (step, start, dest = null) {
+        let generator = iterateDirectionStep(step, start, dest);
+        let pos;
+        do {
+            pos = generator.next();
+            if (Number.isInteger(pos.value)) {
+                if (this.board[pos.value] !== EMPTY) return pos.value;
+                if (pos.value === dest) return pos.value;
+                yield pos.value;
+            }
+        } while (!pos.done);
+    };
+
+    /** Calculate all the valid moves from a starting position **/
+    MEGAChess.prototype.getValidMoves = function (from) {
+        const currentpos = idx2rankfile(from);
+        const piece = FENChar(this.board[from]);
+        if (!piece) return false;
+
+        /**
+         * Based on the starting piece type, generate a list of all possible destination moves / directions.
+         * Check the allowed moves to check if they are valid.
+         * Scan the allowed directions to see if they are valid.
+         *
+         * Here is a grid to assist with movements.
+         * +14 +15 +16 +17 +18
+         * +06 +07 +08 +09 +10
+         * -02 -01 +00 +01 +02
+         * -10 -09 -08 -07 -06
+         * -18 -17 -16 -15 -14
+         */
+        let validlocations = [];
+        const steps = []; // Scan directions.
+        const moves = []; // Static moves.
+        switch (piece.type) {
+            case PIECES.ROOK:
+                steps.push(DIRECTION.UP, DIRECTION.DOWN, DIRECTION.LEFT, DIRECTION.RIGHT);
+                break;
+            case PIECES.KNIGHT:
+                moves.push(
+                    {rank: 1, file: 2},
+                    {rank: -1, file: 2},
+                    {rank: -2, file: 1},
+                    {rank: -2, file: -1},
+                    {rank: -1, file: -2},
+                    {rank: 1, file: -2},
+                    {rank: 2, file: -1},
+                    {rank: 2, file: 1}
+                );
+                break;
+            case PIECES.BISHOP:
+                steps.push(DIRECTION.UP_LEFT, DIRECTION.UP_RIGHT, DIRECTION.DOWN_LEFT, DIRECTION.DOWN_RIGHT);
+                break;
+            case PIECES.QUEEN:
+                steps.push(
+                    DIRECTION.UP, DIRECTION.DOWN, DIRECTION.LEFT, DIRECTION.RIGHT,
+                    DIRECTION.UP_LEFT, DIRECTION.UP_RIGHT, DIRECTION.DOWN_LEFT, DIRECTION.DOWN_RIGHT
+                );
+                break;
+            case PIECES.KING:
+                moves.push(
+                    DIRECTION.UP, DIRECTION.DOWN, DIRECTION.LEFT, DIRECTION.RIGHT,
+                    DIRECTION.UP_LEFT, DIRECTION.UP_RIGHT, DIRECTION.DOWN_LEFT, DIRECTION.DOWN_RIGHT
+                );
+                break;
+            case PIECES.PAWN:
+                if (piece.white) moves.push(DIRECTION.UP, DIRECTION.UP_LEFT, DIRECTION.UP_RIGHT, {rank: 2, file: 0});
+                else moves.push(DIRECTION.DOWN, DIRECTION.DOWN_LEFT, DIRECTION.DOWN_RIGHT, {rank: -2, file: 0});
+                break;
+        }
+
+
+        for (let i = 0; i < moves.length; i++) {
+            let newpos = {
+                rank: currentpos.rank + moves[i].rank,
+                file: currentpos.file + moves[i].file,
+            };
+
+            if (newpos.rank < 0 || newpos.rank > 7 || newpos.file < 0 || newpos.file > 7) continue;
+            let dest = rankfiletoidx(newpos);
+            let morphscan = piece.type === PIECES.PAWN && Math.abs(moves[i].rank) > 1;
+            if (this.isValidMove({from: from, to: dest}, morphscan)) validlocations.push(dest);
+        }
+
+        for (let i = 0; i < steps.length; i++) {
+            const gen = this._morphDiscover(steps[i], from);
+            let next;
+            do {
+                next = gen.next();
+                let dest = next.value;
+                if (Number.isInteger(dest)) {
+                    if (this.board[dest] !== EMPTY) {
+                        let other = FENChar(this.board[dest]);
+                        if (!other || (other.white === piece.white)) break;
+                    }
+                    validlocations.push(dest);
+                }
+            } while (!next.done);
+        }
+
+        return validlocations;
+    }
+
+    /** Open rendering in new image **/
+    MEGAChess.prototype.openImage = function (size, perspective= 0) {
+        return new Promise((resolve, reject) => {
+            let canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            this.renderImage(canvas, canvas.getContext('2d'), perspective).then(() => {
+                canvas.toBlob(blob => {
+                    let url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                });
+            }, reject);
+        });
+    };
+
+    /** Render the current board state **/
+    MEGAChess.prototype.renderImage = async function (canvas, ctx, perspective= 0) {
+        const renderings = [];
+        renderBoard(canvas, ctx);
+        const tileSize = canvas.width / 8;
+
+        for (let cursor = 0; cursor < this.board.length; cursor++) {
+            let piece = FENChar(this.board[cursor]);
+            if (!piece) continue;
+            let rankfile = idx2rankfile(cursor);
+
+            let sprite = sprites[(piece.white ? 'white' : 'black') + piece.type];
+            let render_rank = perspective ? rankfile.rank : 7 - rankfile.rank;
+            let render_file = perspective ? 7 - rankfile.file : rankfile.file;
+            let pos = {
+                y: ((render_rank) * tileSize) + (tileSize / 2),
+                x: (render_file * tileSize) + (tileSize / 2),
+            };
+
+            if (sprite) {
+                renderings.push(drawimg(canvas, ctx, pos, {w: tileSize, h: tileSize}, sprite));
+            }
+            else {
+                ctx.font = "10px Arial";
+                ctx.textAlign = "center";
+                ctx.fillStyle = (piece.white ? "white" : "black");
+                ctx.fillText(this.board[cursor], pos.x, pos.y);
+            }
+        }
+
+        // Render the last move.
+        // TODO.
+
+        // Wait for all rendering to settle or errors.
+        return Promise.all(renderings);
+    };
+
+    /** Given a move, calculate the direction of the piece in the lowest step possible **/
+    function calculateDirectionPos(pos_data) {
+        /**
+         * Note, directions in chess are always some multiple of 45,
+         * so to make things easier, the direction is always assumed to be step = 1
+         */
+
+        return {
+            rank: Math.sign(pos_data.distance.rank),
+            file: Math.sign(pos_data.distance.file),
+        };
+    }
+
+    /** Simplify things by having a single "pos" object for moves **/
+    function moveposdata(move) {
+        const pos_from = idx2rankfile(move.from);
+        const pos_to = idx2rankfile(move.to);
+        return {
+            from: pos_from,
+            to: pos_to,
+            distance: calculateDistancePos(pos_from, pos_to)
+        };
+    }
+
+    /** Convert algebraic notation into rank file combo **/
+    function notation2rankfile(str) {
+        if (str.length !== 2) return false;
+        str = str.toLowerCase();
+
+        let chr = str.charCodeAt(0);
+        let num = str.charCodeAt(1);
+
+        if (chr < 97 || chr > 104) return false;
+        if (num < 49 || num > 56) return false;
+
+        return {
+            rank: chr - 97,
+            file: num - 49
+        };
+    }
+
+    /** Convert algebraic notation into board index value **/
+    function notation2idx(str) {
+        let pos = notation2rankfile(str);
+        if (!pos) return pos;
+        return pos.rank * 8 + pos.file;
+    }
+
+    /** Calculate distance between two points in terms of rank and file **/
+    function calculateDistancePos(pos_from, pos_to) {
+        return {
+            rank: pos_to.rank - pos_from.rank,
+            file: pos_to.file - pos_from.file,
+        };
+    }
+
+    /** Convert board index value into a rank/file combo **/
+    function idx2rankfile(idx) {
+        const rank = Math.floor(idx / 8);
+        return {
+            rank: rank,
+            file: idx - (rank * 8)
+        };
+    }
+
+    /** Convert rank/file combo into board index value **/
+    function rankfiletoidx(rank, file) {
+        if (typeof rank === "object") return rank.rank * 8 + rank.file;
+        return rank * 8 + file;
+    }
+
+    /** Parse FEN state into object **/
+    function parseFEN(fen) {
+        const parts = fen.split(' ');
+        if (parts.length < 5) return null;
+        return Object.freeze({
+            placement: parts[0],
+            turn: parts[1],
+            castling: parts[2],
+            enpassant: parts[3],
+            halfmoves: parseInt(parts[4]),
+            fullmoves: parseInt(parts[5]),
+            fen: fen
+        });
+    }
+
+    /** Get info about a single FEN character **/
+    function FENChar(fenchar) {
+        if (typeof fenchar !== "string") return false;
+        if (fenchar.length !== 1) return false;
+        const type = FENNotation[fenchar.toLowerCase()] || null;
+        if (!type) return false;
+
+        const ascii = fenchar.charCodeAt(0);
+        const white = ascii >= 65 && ascii <= 90;
+
+        return {
+            type: type,
+            white: white,
+        };
+    }
+
+    /** Iterate each position in a fen message, executing the callback with each valid non-empty position **/
+    function fenplacementiterator(fen, callback) {
+        let lines = fen.split(' ')[0].split('/');
+        let rank = 7;
+        for (let line = 0; line < lines.length; line++, rank--) {
+            let file = 0;
+            for (let i = 0; i < lines[line].length; i++) {
+                let ascii = lines[line].charCodeAt(i);
+                if (ascii >= 48 && ascii <= 57) file += parseInt(lines[line][i]);
+                else {
+                    let type = FENNotation[lines[line][i].toLowerCase()] || null;
+                    let white = ascii >= 65 && ascii <= 90;
+                    if (type) {
+                        callback(Object.freeze({
+                            type: type,
+                            rank: rank,
+                            file: file,
+                            white: white,
+                            fen: lines[line][i]
+                        }));
+                    }
+                    file++;
+                }
+            }
+        }
+    }
+
+    /** Check if a chatmessage is a valid MEGAChess message type. **/
+    function ischessmsg(chatmessage) {
+        return chatmessage && chatmessage.metaType && chatmessage.metaType === Message.MESSAGE_META_TYPE.CHESS;
+    }
+
+    /** Prepare a megachess message for chat **/
     function preparemsg(meta) {
         return (
             Message.MANAGEMENT_MESSAGE_TYPES.MANAGEMENT +
@@ -141,29 +597,81 @@
         );
     }
 
-    // cache renderable images, you must wait for it to load so wait upon the promise.
+    /** Cache a renderable as an image **/
     function spritecache(renderable) {
         if (!spritecache.cache) spritecache.cache = {};
 
+        // Attempt to load the image and render it, else resolve with null value.
         return new Promise((resolve) => {
             if (!spritecache.cache[renderable]) {
                 let img = new Image();
                 img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
                 img.src = renderable;
                 spritecache.cache[renderable] = img;
             }
-            resolve(spritecache.cache[renderable] || null);
+            else resolve(spritecache.cache[renderable] || null);
         });
     }
 
-    // Do draw an image as a promise.
+    /** Render an image to the canvas **/
     function drawimg(canvas, ctx, pos, size, renderable) {
         return new Promise((resolve, reject) => {
             spritecache(renderable).then(img => {
-                ctx.drawImage(img, pos.x - size.w / 2, pos.y - size.h / 2, size.w, size.h);
+                if (img) ctx.drawImage(img, pos.x - size.w / 2, pos.y - size.h / 2, size.w, size.h);
                 resolve();
             }).catch(reject);
         });
+    }
+
+    /** Render the board to canvas **/
+    function renderBoard(canvas, ctx) {
+        const tileSize = canvas.width / 8;
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                ctx.beginPath();
+                ctx.rect(x * tileSize, y * tileSize, tileSize, tileSize);
+                let color = (y % 2 === 0) ? (x % 2 === 0 ? 0 : 1) : (x % 2 === 0 ? 1 : 0);
+                ctx.fillStyle = color === 0 ? "grey" : "brown";
+                ctx.fill();
+            }
+        }
+
+        // Draw the boarder
+        ctx.beginPath();
+        ctx.lineWidth = "2";
+        ctx.strokeStyle = "black";
+        ctx.rect(0, 0, canvas.width, canvas.height);
+        ctx.stroke();
+    }
+
+    /** Yields each position in direction until edge of board **/
+    function *iterateDirectionStep(step, cursor, dest = null) {
+        let current = idx2rankfile(cursor);
+        do {
+            current.rank += step.rank;
+            current.file += step.file;
+            if (current.rank < 0 || current.rank > 7 || current.file < 0 || current.file > 7) return null;
+            cursor += step.rank * 8 + step.file;
+            if (cursor === dest) return cursor;
+            yield cursor;
+        } while (cursor >= 0 && cursor <= 63);
+        return null;
+    }
+
+    /** ChessError type returned when an error occurs. **/
+    class ChessError extends Error {
+        constructor(msg, ...params) {
+            super(msg);
+            if (Error.captureStackTrace) Error.captureStackTrace(this, ChessError)
+            this.name = 'ChessError'
+            this.extra = params;
+        }
+    }
+
+    // Export some stuff for debugging.
+    if (localStorage.d) {
+        scope.idxtorankfile = idx2rankfile;
     }
 })(mega.chess = {});
 
