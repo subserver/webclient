@@ -44,13 +44,13 @@ export default class ChessMove extends AbstractGenericMessage {
         return (
             <div className="message chessmove chessmove-container">
                 <ChessmoveThumbnail
-                    width="120"
-                    height="120"
+                    width="150"
+                    height="150"
                     boardstate={message.meta.boardstate || null}
                 />
                 <div className="message chessmove-summary-wrapper">
-                    <div className="message chessmove-title">{message.textContents}</div>
-                    <div className="message chessmove-descriptor"/>
+                    <div className="message chessmove-title text-block">{message.textContents}</div>
+                    <div className="message chessmove-descriptor text-block"/>
                 </div>
             </div>
         );

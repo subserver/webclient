@@ -13879,30 +13879,16 @@ class giphy_Giphy extends abstractGenericMessage_AbstractGenericMessage {
 const ChessmoveThumbnail = props => {
   const canvasRef = Object(external_React_["useRef"])(null);
   const {
+    previousstate,
     boardstate,
+    move,
     ...rest
   } = props;
 
   const draw = (canvas, ctx) => {
     console.log("Board State: ", boardstate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const tileSize = canvas.width / 8;
-
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        ctx.beginPath();
-        ctx.rect(x * tileSize, y * tileSize, tileSize, tileSize);
-        let color = y % 2 === 0 ? x % 2 === 0 ? 0 : 1 : x % 2 === 0 ? 1 : 0;
-        ctx.fillStyle = color === 0 ? "grey" : "brown";
-        ctx.fill();
-      }
-    }
-
-    ctx.beginPath();
-    ctx.lineWidth = "2";
-    ctx.strokeStyle = "black";
-    ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.stroke();
+    mega.chess.renderpreview(canvas, ctx, previousstate, boardstate, move);
   };
 
   Object(external_React_["useEffect"])(() => {
@@ -13962,15 +13948,15 @@ class chessmove_ChessMove extends abstractGenericMessage_AbstractGenericMessage 
     return external_React_default.a.createElement("div", {
       className: "message chessmove chessmove-container"
     }, external_React_default.a.createElement(chessmoveThumbnail, {
-      width: "120",
-      height: "120",
+      width: "150",
+      height: "150",
       boardstate: message.meta.boardstate || null
     }), external_React_default.a.createElement("div", {
       className: "message chessmove-summary-wrapper"
     }, external_React_default.a.createElement("div", {
-      className: "message chessmove-title"
+      className: "message chessmove-title text-block"
     }, message.textContents), external_React_default.a.createElement("div", {
-      className: "message chessmove-descriptor"
+      className: "message chessmove-descriptor text-block"
     })));
   }
 
