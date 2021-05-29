@@ -1,5 +1,7 @@
 (function(scope) {
-
+    const logger = new MegaLogger({
+        name: "MEGAChess"
+    });
     const PIECES = Object.freeze({
         ROOK: 'Rook',
         KNIGHT: 'Knight',
@@ -8,7 +10,6 @@
         KING: 'King',
         PAWN: 'Pawn'
     });
-
     /** Convert FEN character to piece type **/
     const FENNotation = Object.freeze({
         'r': PIECES.ROOK,
@@ -24,7 +25,6 @@
         [PIECES.KING]: 'k',
         [PIECES.PAWN]: 'p',
     });
-
     /** Sprites **/
     const sprites = {
         blackBishop: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAADPklEQVRoge2ZzWsTQRiHn25VDLam1gaN9iLooRdFK6kHkYLgScpC60UEDzl4EhEs3rR+Hjz5DwR6EQ9KhXqVXvyCJLUhIPQgnvRktjW1GF3NrofZNW2SzX5MNouYBwaW7Mw7v3d23vl4A126dPkv6AnZ/iRw1np+DsyF3F8ozAJmXZmNUE8gTtPohF3Gw+hQCcMowhEnzoTRYViOVFq8+x5Sn6EwAvwGDGpTyrB+G4lQVyDuAlVqjlSB25Eq8kkSyLDZiY3OZIC9kanzyCTwFecVyy4rgBqRRlfuURt1N0fsOnciUdqCB9QC2s0Js67u/Qj0NuUiLQSrqmqqqurm1PkIdG8iAZRpMZ0KhYJZKBTcptkKsFtGiOyGeA3Y2cqOoigoSstuFGAXcFVSS2BiiJFsiAtVVc1cLmfm83nTJp/Pm7lczmmaGYAGbAsqRuaLjCNGsh1XgR5gkJAOlG7cxMPqVCwWzWKx6HUluxFUzJbAbnjcnQ3D8GNzTzApco7oXirNzMz4sfkzkBJJLuF98/Na0h31wGI/4ljeLid0IjxMPvYg0Gt51GHtmxgGSvg7YzXbQ0rAPhkh7dgDDgNPR0dHD83PzxOLxTw1qlQqTExMsLi4uAxMAe9lRMisWjZFYE7TtOvZbJa+vj5PjdbX19E0DeAZkk60i1OI6RFkehmIQ+PJjqtuwgLeLlOtTr8vZEXIxshAOp1eHRoakjJSKpXIZDJxYE1STzBSqdQ5XddNWXRdN8fGxqZktEgFezab7U8mk8TjcRkzlMtlNE3bIWVEknHatyEe6az0RqYRKVI7cP0EuYlIoU53XLUDCeAK8Arv6aCXwGWrrTR+V61hq+NBq+12xJUXxG1xADgAHAOOAlvr2v8C3gFLwEdE4mLVelcBfiAcXQG+AJ986nNEAS4ABatTPxtdkHf1pQw8AY7LOBEH3uB/7odRqsBDGr+wK73A64jFNysLOCRMnGIkjkhG2xhOBlz4Bnywng8C/QFs1Pc9SC2u/uK0IZYRh8FbiPV9GXgL5BBBWLbq9SISdDZ2Jr4KfLbqbiSBWDAUxCAObHi3ZrUDMZAJIAWcQPw5tITI3DQ40aVLly7/Hn8ABDVYwUK+TtsAAAAASUVORK5CYII=",
@@ -40,9 +40,7 @@
         whiteQueen: "data:image/png;base64,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",
         whiteRook: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAAC40lEQVRoge2YsWsTURzHP++ZNto7qBwOYrLUdtNzqZhFCh10cdB/oRQcxK2LIE4i0sH1xKlQMhcdnDq0FJcOWXJ0SpBCE8nUpHAtIcX8HNraJLVN7t5Vg9wHHuTuvu/3ft979+7yfpCQkJCQkJCACql/Brzu6fcTWAC+9dEBCPAO+Nxx7iHwAbjSR3chqUGFxzwG7k9NTTE+Po7v+7RaLYAndBvp0gHs7e1RLpdPrvUaeTA6OorruhfpYsUDpNFoiIhIsVgUju6eAJ86mnTqREQajcaF2mKx2KvzwiQWdka6yGQynYfPOw8cxxHLsn4/WpZl4TiO7O7uql7tH2KFxsiI4zg0m00ODg7OXLNtW6VSp+FTqRS1Wk0FQXBGOzY2RjqdNkkltJFrAOvr61iWZTTweezv73eNdVlscfqcX3bbCpNY2NfvtFJqFbg+NzencrlcyO4Xs7m5ydLSkgANEXkEFGIdoIcJrfWO1rqdz+clLvL5vGit21rrHWAibFJhZ+SE21rrDdu2M9lstj0yMhIxzBGHh4dUKhUdBEG13W7PAN+NAoZkHhDP84xnw/O8k3UxHzUZbWCkZtA39pgmRoaKxMiwkRgZNhIjw0ZiZNj4b4wY7RAB6vU69XrdOIYpJkbuKqVYXl5mZWXFKIkgCFBKISJ3gK9GwUIyopQqp9Np2d7eNv73WygUBBClVBmItCeIMiOjgCcik7lcjlKpRKlUijJ2FzMzM2xsbEwCH4EXQMs4aB9ecvn79YWwSUWZERtgdnbWuBbVS7VaZW1tDeBGrIHP4RUdlcE46ahcvg+b1H/zHRm0+PAGeHr8+yaQOSk6x0lHUbwGVI9PfwHe9us7qJEi4E5PTxMEAZVKBRGJlGzfhJQim81i2zaFQgHAB+7FFb/oum7sa6IfrusKRzexLwO/tXzfZ3FxMfKdiILv+7HHXOXv1Xx72+ogCQ66Rq4CtwbUxs0PoPmPxk5ISBg2fgEmGtoDZBTybwAAAABJRU5ErkJggg=="
     };
-
     const EMPTY = '.';
-
     const DIRECTION = {
         UP_LEFT: {rank: 1, file: -1},
         UP_RIGHT: {rank: 1, file: 1},
@@ -53,6 +51,8 @@
         UP: {rank: 1, file: 0},
         DOWN: {rank: -1, file: 0}
     };
+
+    /** ========= Public facing interface for rendering/controlling the game =========**/
 
     /** Send a new game invite **/
     scope.sendInvite = function(roomhandle, note) {
@@ -161,6 +161,26 @@
         return new MEGAChess(chatmessage);
     }
 
+    /** Open a chess game as the dialog **/
+    scope.open = function (chessgame) {
+        if (!chessgame instanceof MEGAChess) return new ChessError("Not a chess game");
+
+
+    };
+
+
+    /** Load a chess game from a chat message **/
+    scope.openFromMessage = function(chatmessage) {
+        return new Promise((resolve, reject) => {
+            let game = scope.load(chatmessage);
+            scope.open(game).then(resolve, reject);
+        });
+    }
+
+
+
+    /** ========= Internal chess game functions =========**/
+
     /** Create the MEGAChess object for storing gamestate. **/
     function MEGAChess(chatmessage) {
         if (!ischessmsg(chatmessage)) return new ChessError("Not a chess message.", chatmessage);
@@ -173,7 +193,13 @@
             this.board[item.rank * 8 + item.file] = item.fen;
         });
 
+        this.enpassant = this.fenstate.enpassant;
+        this.castling = this.fenstate.castling;
         this.turn = this.fenstate.turn;
+        this.halfmoves = this.fenstate.halfmoves;
+        this.fullmoves = this.fenstate.fullmoves;
+
+        logger.info("Loaded Game: ", this);
     }
 
     /** Alter the gamestate with move. **/
@@ -212,7 +238,7 @@
             if (!other || piece.white === other.white) return false;
         }
 
-        const distance = pos_data.distance;
+        const distance = Object.assign({}, pos_data.distance);
         const modify = function (modifier) {
             distance.rank = modifier(distance.rank);
             distance.file = modifier(distance.file);
@@ -246,7 +272,23 @@
 
             case PIECES.KING:
                 modify(Math.abs);
-                return !(distance.rank > 1 || distance.file > 1);
+                if (distance.rank < 2 && distance.file < 2) return true;
+                if (distance.rank === 0 && distance.file === 2) {
+                    // Attempting to castle.
+                    if ((piece.white && move.from === 4) || (!piece.white && move.from === 60)) {
+                        if (move.to < move.from) {
+                            // Moving Queenside.
+                            if (piece.white && this.castling.whiteQueen) return true;
+                            else if (piece.black && this.castling.blackQueen) return true;
+                        }
+                        else {
+                            // Moving Kingside.
+                            if (piece.white && this.castling.whiteKing) return true;
+                            else if (piece.black && this.castling.blackKing) return true;
+                        }
+                    }
+                }
+                break;
 
             case PIECES.PAWN:
                 /**
@@ -271,8 +313,8 @@
 
                 if (distance.rank === 1 && Math.abs(distance.file) === 1) {
                     if (capturing) return true;
-                    if (this.fenstate.enpassant) {
-                        if (move.to === notation2idx(this.fenstate.enpassant)) return true;
+                    if (this.enpassant) {
+                        if (move.to === notation2idx(this.enpassant)) return true;
                     }
                 }
                 break;
@@ -314,6 +356,7 @@
 
     /** Calculate all the valid moves from a starting position **/
     MEGAChess.prototype.getValidMoves = function (from) {
+        console.time('MEGAChess::getValidMoves');
         const currentpos = idx2rankfile(from);
         const piece = FENChar(this.board[from]);
         if (!piece) return false;
@@ -361,7 +404,8 @@
             case PIECES.KING:
                 moves.push(
                     DIRECTION.UP, DIRECTION.DOWN, DIRECTION.LEFT, DIRECTION.RIGHT,
-                    DIRECTION.UP_LEFT, DIRECTION.UP_RIGHT, DIRECTION.DOWN_LEFT, DIRECTION.DOWN_RIGHT
+                    DIRECTION.UP_LEFT, DIRECTION.UP_RIGHT, DIRECTION.DOWN_LEFT, DIRECTION.DOWN_RIGHT,
+                    {rank: 0, file: 2}, {rank: 0, file: -2}
                 );
                 break;
             case PIECES.PAWN:
@@ -379,7 +423,9 @@
 
             if (newpos.rank < 0 || newpos.rank > 7 || newpos.file < 0 || newpos.file > 7) continue;
             let dest = rankfiletoidx(newpos);
-            let morphscan = piece.type === PIECES.PAWN && Math.abs(moves[i].rank) > 1;
+            let morphscan = false;
+            if (piece.type === PIECES.PAWN && Math.abs(moves[i].rank) > 1) morphscan = true;
+            if (piece.type === PIECES.KING && Math.abs(moves[i].file) > 1) morphscan = true;
             if (this.isValidMove({from: from, to: dest}, morphscan)) validlocations.push(dest);
         }
 
@@ -399,6 +445,7 @@
             } while (!next.done);
         }
 
+        console.timeEnd('MEGAChess::getValidMoves');
         return validlocations;
     }
 
@@ -407,7 +454,7 @@
         return new Promise((resolve, reject) => {
             let canvas = document.createElement('canvas');
             canvas.width = canvas.height = size;
-            this.renderImage(canvas, canvas.getContext('2d'), perspective).then(() => {
+            this.renderToCanvas(canvas, canvas.getContext('2d'), perspective).then(() => {
                 canvas.toBlob(blob => {
                     let url = URL.createObjectURL(blob);
                     window.open(url, '_blank');
@@ -417,7 +464,7 @@
     };
 
     /** Render the current board state **/
-    MEGAChess.prototype.renderImage = async function (canvas, ctx, perspective= 0) {
+    MEGAChess.prototype.renderToCanvas = async function (canvas, ctx, perspective= 0) {
         const renderings = [];
         renderBoard(canvas, ctx);
         const tileSize = canvas.width / 8;
@@ -451,6 +498,39 @@
 
         // Wait for all rendering to settle or errors.
         return Promise.all(renderings);
+    };
+
+    /** Export state as FEN string **/
+    MEGAChess.prototype.asFEN = function () {
+        let FENstr = '';
+        for (let i = this.board.length - 8; i >= 0; i-= 8)
+        {
+            let emptycount = 0;
+            for (let j = 0; j < 8; j++) {
+                if (this.board[i + j] === EMPTY) emptycount++;
+                else {
+                    if (emptycount) {
+                        FENstr += emptycount;
+                        emptycount = 0;
+                    }
+                    FENstr += this.board[i + j];
+                }
+            }
+            if (emptycount) FENstr += emptycount;
+            if (i !== 0) FENstr += '/';
+        }
+
+        FENstr += ' ' + this.turn;
+        let castling = '';
+        if (this.castling.whiteKing) castling += 'K';
+        if (this.castling.whiteQueen) castling += 'Q';
+        if (this.castling.blackKing) castling += 'k';
+        if (this.castling.blackQueen) castling += 'q';
+        FENstr += ' ' + (castling || '-');
+        FENstr += ' ' + (this.enpassant || '-');
+        FENstr += ' ' + this.halfmoves;
+        FENstr += ' ' + this.fullmoves;
+        return FENstr;
     };
 
     /** Given a move, calculate the direction of the piece in the lowest step possible **/
@@ -528,15 +608,20 @@
     function parseFEN(fen) {
         const parts = fen.split(' ');
         if (parts.length < 5) return null;
-        return Object.freeze({
+        return {
             placement: parts[0],
             turn: parts[1],
-            castling: parts[2],
+            castling: {
+                whiteQueen: parts[2].indexOf('Q') >= 0,
+                whiteKing: parts[2].indexOf('K') >= 0,
+                blackQueen: parts[2].indexOf('q') >= 0,
+                blackKing: parts[2].indexOf('k') >= 0,
+            },
             enpassant: parts[3],
             halfmoves: parseInt(parts[4]),
             fullmoves: parseInt(parts[5]),
             fen: fen
-        });
+        };
     }
 
     /** Get info about a single FEN character **/
