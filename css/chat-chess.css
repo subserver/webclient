@@ -1,0 +1,22 @@
+.message.chessmove-container .chessmove-preview-thumbnail {
+    float: left;
+    width: 150px;
+    height: 150px;
+}
+
+.message.chessmove-container .chessmove-summary-wrapper {
+    margin-left: 150px;
+    height: 130px;
+    padding: 10px;
+}
+
+.message.chessmove-container .chessmove-title {
+    height: 20px;
+}
+
+.message.chessmove-container .chessmove-description-block {
+    height: 74px;
+}
+
+
+

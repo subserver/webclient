@@ -5,9 +5,6 @@ import { Dropdown, DropdownItem } from '../../../../ui/dropdowns.jsx';
 import ChessmoveThumbnail from "./partials/chessmoveThumbnail";
 
 export default class ChessMove extends AbstractGenericMessage {
-    gifRef = React.createRef();
-
-    state = { buffer: null };
 
     constructor(props) {
         super(props);
@@ -41,6 +38,13 @@ export default class ChessMove extends AbstractGenericMessage {
 
     getContents() {
         const { message, hideActionButtons } = this.props;
+
+        let user = M.getUserByHandle(message.userId);
+        let movetitle = (message.meta.move ? l[25082] : l[25083]).replace('%1', user.nickname || user.name || user.m);
+        let moveblock = message.meta.move
+            ? (<div className="message chessmove-descriptor text-block">{l[25084].replace('%1', message.meta.move)}</div>)
+            : null;
+
         return (
             <div className="message chessmove chessmove-container">
                 <ChessmoveThumbnail
@@ -49,8 +53,20 @@ export default class ChessMove extends AbstractGenericMessage {
                     boardstate={message.meta.boardstate || null}
                 />
                 <div className="message chessmove-summary-wrapper">
-                    <div className="message chessmove-title text-block">{message.textContents}</div>
-                    <div className="message chessmove-descriptor text-block"/>
+                    <div className="message chessmove-title text-block">{movetitle}</div>
+                    <div className="message chessmove-description-block">
+                        {moveblock}
+                        <div className="message chessmove-note text-block">{message.meta.note || ""}</div>
+                    </div>
+                    <div className="message chessmove-actions-wrapper">
+                        <Button
+                            className="button mega-button positive"
+                            onClick={() => {
+                                this.props.onChessGameOpen(message);
+                            }}>
+                            <span>Open Game</span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         );

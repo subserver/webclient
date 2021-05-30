@@ -1,3 +1,5 @@
+import ChessmoveThumbnail from "../chat/ui/messages/types/partials/chessmoveThumbnail";
+
 var React = require("react");
 var ReactDOM = require("react-dom");
 import utils  from "./utils.jsx";
@@ -517,8 +519,48 @@ class ConfirmDialog extends MegaRenderMixin {
     }
 };
 
+class ChessDialog extends MegaRenderMixin {
+    static defaultProps = {
+        'confirmLabel': l[6826],
+        'cancelLabel': l[82],
+        'dontShowAgainCheckbox': true,
+        'hideable': true,
+        'dialogType': 'message'
+    };
+
+    constructor(props) {
+        super(props);
+
+    }
+
+    render() {
+        var self = this;
+        console.log(this.props);
+        return (
+            <ModalDialog
+                title={this.props.title}
+                subtitle={this.props.subtitle}
+                className="megachess-dialog"
+                dialogId={this.props.name}
+                dialogType={this.props.dialogType}
+                icon={this.props.icon}
+                onClose={() => {
+                    self.props.onClose(self);
+                }}
+                >
+                <ChessmoveThumbnail
+                    width="150"
+                    height="150"
+                    boardstate={this.props.chessMessage.meta.boardstate || null}
+                />
+            </ModalDialog>
+        );
+    }
+};
+
 export default {
     ModalDialog,
     SelectContactDialog,
-    ConfirmDialog
+    ConfirmDialog,
+    ChessDialog
 };

@@ -3265,6 +3265,7 @@ else if (!browserUpdate) {
             'chat_common_css':{f:'css/chat-common.css', n: 'chat_common_css', j:2,'w':5,'c':1,'cache':1,'d':1},
             'chat_emoji_css':{f:'css/chat-emoji.css', n: 'chat_emoji_css', j:2,'w':2,'c':1,'cache':1,'d':1},
             'chat_history_retention_css':{f:'css/chat-history-retention.css', n: 'chat_history_retention_css', j:2,'w':2,'c':1,'cache':1,'d':1},
+            'megachess_css':{f:'css/chat-chess.css', n:'megachess_css', j:2,'w':2,'c':1,'cache':1,'d':1},
 
             /* chat related js */
             'search_js': {f:'js/chat/search.js', n: 'search_js', j:1},
@@ -3307,7 +3308,7 @@ else if (!browserUpdate) {
             'chat_reactions_js': {f:'js/chat/reactions.js', n: 'chat_reactions_js', j:1},
             'chat_messages_Js': {f:'js/chat/messages.js', n: 'chat_messages_Js', j:1},
             'presence2_js': {f:'js/chat/presence2.js', n: 'presence2_js', j:1},
-            'megachess_js': {f: 'js/game/chess.js', n: 'megachess_js', j: 1},
+            'megachess_js': {f: 'js/chat/game/chess.js', n: 'megachess_js', j: 1},
             // leave the bundle at the end.
             'chat_react_minified_js': {f:'js/chat/bundle.js', n: 'chat_react_minified_js', j:1}
         }

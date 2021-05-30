@@ -56,7 +56,6 @@
 
     /** Send a new game invite **/
     scope.sendInvite = function(roomhandle, note) {
-        note = note || "Lets have a game of chess!";
         let chatroom = megaChat.getChatById(roomhandle);
         if (!chatroom) {
             console.error("Room does not exist", roomhandle);
@@ -64,12 +63,13 @@
         }
 
         // Generate a very basic textMessage which gets rendered for clients that don't support the meta data type.
-        let text = "Chess Invite: " + note;
+        let text = "Has invited you to play chess";
+        if (note) text += ": " + note;
         chatroom.sendMessage(preparemsg({
             textMessage: text,
             boardstate: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
             move: null,
-            note: note,
+            note: note || null,
             previous: null,
         }));
     };
@@ -84,7 +84,7 @@
         }
 
         // Generate a text description of the move for old clients.
-        let text = `Move: ${move}`;
+        let text = `Made a chess move: ${move}`;
         if (note) text += ` (${note})`;
 
         chatroom.sendMessage(preparemsg({
@@ -117,7 +117,7 @@
 
         // Draw the boarder
         ctx.beginPath();
-        ctx.lineWidth = "2";
+        ctx.lineWidth = "1";
         ctx.strokeStyle = "black";
         ctx.rect(0, 0, canvas.width, canvas.height);
         ctx.stroke();
@@ -163,21 +163,23 @@
 
     /** Open a chess game as the dialog **/
     scope.open = function (chessgame) {
-        if (!chessgame instanceof MEGAChess) return new ChessError("Not a chess game");
+        return new Promise((resolve, reject) => {
+            if (!chessgame instanceof MEGAChess) reject(new ChessError("Not a chess game"));
 
 
+        });
     };
-
 
     /** Load a chess game from a chat message **/
     scope.openFromMessage = function(chatmessage) {
         return new Promise((resolve, reject) => {
             let game = scope.load(chatmessage);
-            scope.open(game).then(resolve, reject);
+            scope.open(game).then(() => {
+                logger.info("Game Loaded", game);
+                resolve(game);
+            }, reject);
         });
     }
-
-
 
     /** ========= Internal chess game functions =========**/
 
@@ -533,6 +535,11 @@
         return FENstr;
     };
 
+    /** Generate text version of game **/
+    MEGAChess.prototype.toString = function() {
+        return this.asFEN();
+    };
+
     /** Given a move, calculate the direction of the piece in the lowest step possible **/
     function calculateDirectionPos(pos_data) {
         /**
@@ -748,8 +755,8 @@
     class ChessError extends Error {
         constructor(msg, ...params) {
             super(msg);
-            if (Error.captureStackTrace) Error.captureStackTrace(this, ChessError)
-            this.name = 'ChessError'
+            if (Error.captureStackTrace) Error.captureStackTrace(this, ChessError);
+            this.name = 'ChessError';
             this.extra = params;
         }
     }

@@ -82,7 +82,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -3369,10 +3369,13 @@ module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 "use strict";
 
-var _utils_jsx0__ = __webpack_require__(5);
-var _stores_mixins_js1__ = __webpack_require__(1);
-var _tooltips_jsx2__ = __webpack_require__(13);
-var _forms_jsx3__ = __webpack_require__(15);
+var _chat_ui_messages_types_partials_chessmoveThumbnail0__ = __webpack_require__(15);
+var _utils_jsx1__ = __webpack_require__(5);
+var _stores_mixins_js2__ = __webpack_require__(1);
+var _tooltips_jsx3__ = __webpack_require__(13);
+var _forms_jsx4__ = __webpack_require__(16);
+
+
 var React = __webpack_require__(0);
 
 var ReactDOM = __webpack_require__(6);
@@ -3384,14 +3387,14 @@ var ReactDOM = __webpack_require__(6);
 
 var ContactsUI = __webpack_require__(4);
 
-class ExtraFooterElement extends _stores_mixins_js1__["MegaRenderMixin"] {
+class ExtraFooterElement extends _stores_mixins_js2__["MegaRenderMixin"] {
   render() {
     return this.props.children;
   }
 
 }
 
-class ModalDialog extends _stores_mixins_js1__["MegaRenderMixin"] {
+class ModalDialog extends _stores_mixins_js2__["MegaRenderMixin"] {
   constructor(props) {
     super(props);
     this.onBlur = this.onBlur.bind(this);
@@ -3552,7 +3555,7 @@ class ModalDialog extends _stores_mixins_js1__["MegaRenderMixin"] {
       }
     }
 
-    return React.createElement(_utils_jsx0__["default"].RenderTo, {
+    return React.createElement(_utils_jsx1__["default"].RenderTo, {
       element: document.body,
       className: "fm-modal-dialog",
       popupDidMount: this.onPopupDidMount
@@ -3587,7 +3590,7 @@ ModalDialog.defaultProps = {
   'selectedNum': 0
 };
 
-class SelectContactDialog extends _stores_mixins_js1__["MegaRenderMixin"] {
+class SelectContactDialog extends _stores_mixins_js2__["MegaRenderMixin"] {
   constructor(props) {
     super(props);
     this.state = {
@@ -3671,7 +3674,7 @@ SelectContactDialog.defaultProps = {
   'hideable': true
 };
 
-class ConfirmDialog extends _stores_mixins_js1__["MegaRenderMixin"] {
+class ConfirmDialog extends _stores_mixins_js2__["MegaRenderMixin"] {
   static saveState(o) {
     let state = mega.config.get('xcod') >>> 0;
     mega.config.set('xcod', state | 1 << o.props.pref);
@@ -3759,7 +3762,7 @@ class ConfirmDialog extends _stores_mixins_js1__["MegaRenderMixin"] {
     if (self.props.dontShowAgainCheckbox) {
       dontShowCheckbox = React.createElement("div", {
         className: "footer-checkbox"
-      }, React.createElement(_forms_jsx3__["a"].Checkbox, {
+      }, React.createElement(_forms_jsx4__["a"].Checkbox, {
         name: "delete-confirm",
         id: "delete-confirm",
         onLabelClick: (e, state) => {
@@ -3813,10 +3816,46 @@ ConfirmDialog.defaultProps = {
   'hideable': true,
   'dialogType': 'message'
 };
+
+class ChessDialog extends _stores_mixins_js2__["MegaRenderMixin"] {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    var self = this;
+    console.log(this.props);
+    return React.createElement(ModalDialog, {
+      title: this.props.title,
+      subtitle: this.props.subtitle,
+      className: "megachess-dialog",
+      dialogId: this.props.name,
+      dialogType: this.props.dialogType,
+      icon: this.props.icon,
+      onClose: () => {
+        self.props.onClose(self);
+      }
+    }, React.createElement(_chat_ui_messages_types_partials_chessmoveThumbnail0__["a"], {
+      width: "150",
+      height: "150",
+      boardstate: this.props.chessMessage.meta.boardstate || null
+    }));
+  }
+
+}
+
+ChessDialog.defaultProps = {
+  'confirmLabel': l[6826],
+  'cancelLabel': l[82],
+  'dontShowAgainCheckbox': true,
+  'hideable': true,
+  'dialogType': 'message'
+};
 __webpack_exports__["a"] = ({
   ModalDialog,
   SelectContactDialog,
-  ConfirmDialog
+  ConfirmDialog,
+  ChessDialog
 });
 
 /***/ }),
@@ -6998,6 +7037,45 @@ DropdownEmojiSelector.defaultProps = {
   'requiresUpdateOnResize': true,
   'hideable': true
 };
+
+/***/ }),
+
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var _extends0__ = __webpack_require__(7);
+var _extends0 = __webpack_require__.n(_extends0__);
+var react1__ = __webpack_require__(0);
+var react1 = __webpack_require__.n(react1__);
+
+
+
+const ChessmoveThumbnail = props => {
+  const canvasRef = Object(react1__["useRef"])(null);
+  const {
+    previousstate,
+    boardstate,
+    move,
+    ...rest
+  } = props;
+
+  const draw = (canvas, ctx) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    mega.chess.renderpreview(canvas, ctx, previousstate, boardstate, move);
+  };
+
+  Object(react1__["useEffect"])(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    draw(canvas, context);
+  }, [boardstate]);
+  return react1.a.createElement("canvas", _extends0()({
+    className: "chessmove-preview-thumbnail",
+    ref: canvasRef
+  }, rest));
+};
+
+__webpack_exports__["a"] = (ChessmoveThumbnail);
 
 /***/ }),
 
@@ -12100,7 +12178,7 @@ class abstractGenericMessage_AbstractGenericMessage extends mixin["ConversationM
 
 }
 // EXTERNAL MODULE: ./js/chat/ui/messages/utils.jsx
-var messages_utils = __webpack_require__(16);
+var messages_utils = __webpack_require__(17);
 
 // CONCATENATED MODULE: ./js/chat/ui/messages/types/local.jsx
 
@@ -13107,7 +13185,7 @@ var metaRichpreview_React = __webpack_require__(0);
 
 var ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
-var MetaRichPreviewLoading = __webpack_require__(17).MetaRichpreviewLoading;
+var MetaRichPreviewLoading = __webpack_require__(18).MetaRichpreviewLoading;
 
 class MetaRichpreview extends ConversationMessageMixin {
   getBase64Url(b64incoming) {
@@ -13273,7 +13351,7 @@ class MetaRichprevConfirmation extends metaRichpreviewConfirmation_ConversationM
     }, metaRichpreviewConfirmation_React.createElement("div", {
       className: "message richpreview img-wrapper"
     }, metaRichpreviewConfirmation_React.createElement("div", {
-      className: "\r message\r richpreview\r preview-confirmation\r sprite-fm-illustration\r img-chat-url-preview\r "
+      className: " message richpreview preview-confirmation sprite-fm-illustration img-chat-url-preview "
     })), metaRichpreviewConfirmation_React.createElement("div", {
       className: "message richpreview inner-wrapper"
     }, metaRichpreviewConfirmation_React.createElement("div", {
@@ -13346,7 +13424,7 @@ function GeoLocation(props) {
 
 var geoLocation = (GeoLocation);
 // EXTERNAL MODULE: ./js/chat/ui/messages/types/partials/metaRichPreviewLoading.jsx
-var metaRichPreviewLoading = __webpack_require__(17);
+var metaRichPreviewLoading = __webpack_require__(18);
 
 // CONCATENATED MODULE: ./js/chat/ui/messages/types/partials/metaRichpreviewMegaLinks.jsx
 
@@ -13872,36 +13950,9 @@ class giphy_Giphy extends abstractGenericMessage_AbstractGenericMessage {
   }
 
 }
-// CONCATENATED MODULE: ./js/chat/ui/messages/types/partials/chessmoveThumbnail.jsx
+// EXTERNAL MODULE: ./js/chat/ui/messages/types/partials/chessmoveThumbnail.jsx
+var chessmoveThumbnail = __webpack_require__(15);
 
-
-
-const ChessmoveThumbnail = props => {
-  const canvasRef = Object(external_React_["useRef"])(null);
-  const {
-    previousstate,
-    boardstate,
-    move,
-    ...rest
-  } = props;
-
-  const draw = (canvas, ctx) => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    mega.chess.renderpreview(canvas, ctx, previousstate, boardstate, move);
-  };
-
-  Object(external_React_["useEffect"])(() => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    draw(canvas, context);
-  }, [boardstate]);
-  return external_React_default.a.createElement("canvas", extends_default()({
-    className: "chessmove-preview-thumbnail",
-    ref: canvasRef
-  }, rest));
-};
-
-var chessmoveThumbnail = (ChessmoveThumbnail);
 // CONCATENATED MODULE: ./js/chat/ui/messages/types/chessmove.jsx
 
 
@@ -13911,10 +13962,6 @@ var chessmoveThumbnail = (ChessmoveThumbnail);
 class chessmove_ChessMove extends abstractGenericMessage_AbstractGenericMessage {
   constructor(props) {
     super(props);
-    this.gifRef = external_React_default.a.createRef();
-    this.state = {
-      buffer: null
-    };
   }
 
   getMessageActionButtons() {
@@ -13945,9 +13992,14 @@ class chessmove_ChessMove extends abstractGenericMessage_AbstractGenericMessage 
       message,
       hideActionButtons
     } = this.props;
+    let user = M.getUserByHandle(message.userId);
+    let movetitle = (message.meta.move ? l[25082] : l[25083]).replace('%1', user.nickname || user.name || user.m);
+    let moveblock = message.meta.move ? external_React_default.a.createElement("div", {
+      className: "message chessmove-descriptor text-block"
+    }, l[25084].replace('%1', message.meta.move)) : null;
     return external_React_default.a.createElement("div", {
       className: "message chessmove chessmove-container"
-    }, external_React_default.a.createElement(chessmoveThumbnail, {
+    }, external_React_default.a.createElement(chessmoveThumbnail["a" ], {
       width: "150",
       height: "150",
       boardstate: message.meta.boardstate || null
@@ -13955,9 +14007,18 @@ class chessmove_ChessMove extends abstractGenericMessage_AbstractGenericMessage 
       className: "message chessmove-summary-wrapper"
     }, external_React_default.a.createElement("div", {
       className: "message chessmove-title text-block"
-    }, message.textContents), external_React_default.a.createElement("div", {
-      className: "message chessmove-descriptor text-block"
-    })));
+    }, movetitle), external_React_default.a.createElement("div", {
+      className: "message chessmove-description-block"
+    }, moveblock, external_React_default.a.createElement("div", {
+      className: "message chessmove-note text-block"
+    }, message.meta.note || "")), external_React_default.a.createElement("div", {
+      className: "message chessmove-actions-wrapper"
+    }, external_React_default.a.createElement(ui_buttons["Button"], {
+      className: "button mega-button positive",
+      onClick: () => {
+        this.props.onChessGameOpen(message);
+      }
+    }, external_React_default.a.createElement("span", null, "Open Game")))));
   }
 
 }
@@ -15288,7 +15349,7 @@ var chatHandle_ContactsUI = __webpack_require__(4);
 
 var chatHandle_ConversationMessageMixin = __webpack_require__(10).ConversationMessageMixin;
 
-var getMessageString = __webpack_require__(16).getMessageString;
+var getMessageString = __webpack_require__(17).getMessageString;
 
 class ChatHandleMessage extends chatHandle_ConversationMessageMixin {
   render() {
@@ -17259,7 +17320,9 @@ let conversationpanel_ConversationPanel = (conversationpanel_dec = utils["defaul
       messageToBeDeleted: null,
       editing: false,
       showHistoryRetentionDialog: false,
-      setNonLoggedInJoinChatDlgTrue: null
+      setNonLoggedInJoinChatDlgTrue: null,
+      chessDialog: false,
+      chessMessage: null
     };
     this.handleKeyDown = SoonFc(120, ev => this._handleKeyDown(ev));
     this.handleWindowResize = SoonFc(80, ev => this._handleWindowResize(ev));
@@ -17971,6 +18034,12 @@ let conversationpanel_ConversationPanel = (conversationpanel_dec = utils["defaul
                 'messageToBeDeleted': msg
               });
               self.forceUpdate();
+            },
+            onChessGameOpen: message => {
+              self.setState({
+                chessDialog: true,
+                chessMessage: message
+              });
             }
           }));
         }
@@ -18187,6 +18256,25 @@ let conversationpanel_ConversationPanel = (conversationpanel_dec = utils["defaul
         dialog: true,
         chatRoom: self.props.chatRoom
       }))));
+    }
+
+    var chessDialog = null;
+
+    if (self.state.chessDialog === true) {
+      chessDialog = external_React_default.a.createElement(modalDialogs["a" ].ChessDialog, {
+        chatRoom: room,
+        dialogType: "main",
+        title: "MEGA Chess",
+        subtitle: "Game with xyz",
+        pref: "1",
+        chessMessage: self.state.chessMessage,
+        onClose: () => {
+          self.setState({
+            chessDialog: false,
+            chessGame: null
+          });
+        }
+      });
     }
 
     if (self.state.pasteImageConfirmDialog) {
@@ -18561,7 +18649,7 @@ let conversationpanel_ConversationPanel = (conversationpanel_dec = utils["defaul
           $('.js-messages-scroll-area', self.findDOMNode()).trigger('forceResize', [true]);
         });
       }
-    }) : null, privateChatDialog, chatLinkDialog, nonLoggedInJoinChatDialog, attachCloudDialog, sendContactDialog, confirmDeleteDialog, historyRetentionDialog, null, pushSettingsDialog, external_React_default.a.createElement("div", {
+    }) : null, privateChatDialog, chatLinkDialog, chessDialog, nonLoggedInJoinChatDialog, attachCloudDialog, sendContactDialog, confirmDeleteDialog, historyRetentionDialog, null, pushSettingsDialog, external_React_default.a.createElement("div", {
       className: "dropdown body dropdown-arrow down-arrow tooltip not-sent-notification hidden"
     }, external_React_default.a.createElement("i", {
       className: "dropdown-white-arrow"
@@ -20977,7 +21065,7 @@ var conversations_PerfectScrollbar = __webpack_require__(11).PerfectScrollbar;
 
 
 
-var StartGroupChatWizard = __webpack_require__(22).StartGroupChatWizard;
+var StartGroupChatWizard = __webpack_require__(23).StartGroupChatWizard;
 
 var getRoomName = function (chatRoom) {
   return chatRoom.getRoomTitle();
@@ -22203,8 +22291,8 @@ var ui_conversations = __webpack_exports__["default"] = ({
 
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(21);
-module.exports = __webpack_require__(18);
+__webpack_require__(22);
+module.exports = __webpack_require__(19);
 
 
 /***/ }),
@@ -22259,8 +22347,8 @@ var external_React_default = __webpack_require__.n(external_React_);
 var external_ReactDOM_ = __webpack_require__(6);
 var external_ReactDOM_default = __webpack_require__.n(external_ReactDOM_);
 
-// EXTERNAL MODULE: ./js/chat/ui/conversations.jsx + 80 modules
-var conversations = __webpack_require__(18);
+// EXTERNAL MODULE: ./js/chat/ui/conversations.jsx + 79 modules
+var conversations = __webpack_require__(19);
 
 // CONCATENATED MODULE: ./js/chat/chatRouting.jsx
 class ChatRouting {
@@ -22409,7 +22497,7 @@ class ChatRouting {
 
 
 
-__webpack_require__(20);
+__webpack_require__(21);
 
 __webpack_require__(12);
 
@@ -24665,7 +24753,7 @@ var mixins = __webpack_require__(1);
 var tooltips = __webpack_require__(13);
 
 // EXTERNAL MODULE: ./js/ui/forms.jsx
-var ui_forms = __webpack_require__(15);
+var ui_forms = __webpack_require__(16);
 
 // EXTERNAL MODULE: external "React"
 var external_React_ = __webpack_require__(0);

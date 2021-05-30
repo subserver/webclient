@@ -645,7 +645,9 @@ export class ConversationPanel extends MegaRenderMixin {
             messageToBeDeleted: null,
             editing: false,
             showHistoryRetentionDialog: false,
-            setNonLoggedInJoinChatDlgTrue: null
+            setNonLoggedInJoinChatDlgTrue: null,
+            chessDialog: false,
+            chessMessage: null,
         };
 
         this.handleKeyDown = SoonFc(120, (ev) => this._handleKeyDown(ev));
@@ -1478,6 +1480,12 @@ export class ConversationPanel extends MegaRenderMixin {
                                 });
                                 self.forceUpdate();
                             }}
+                            onChessGameOpen={(message) => {
+                                self.setState({
+                                    chessDialog: true,
+                                    chessMessage: message,
+                                });
+                            }}
                         />
                     );
                 }
@@ -1716,6 +1724,21 @@ export class ConversationPanel extends MegaRenderMixin {
                     </div>
                 </section>
             </ModalDialogsUI.ConfirmDialog>
+        }
+
+        var chessDialog = null;
+        if (self.state.chessDialog === true) {
+            chessDialog = <ModalDialogsUI.ChessDialog
+                chatRoom={room}
+                dialogType="main"
+                title="MEGA Chess"
+                subtitle="Game with xyz"
+                pref="1"
+                chessMessage={self.state.chessMessage}
+                onClose={() => {
+                    self.setState({chessDialog: false, chessGame: null});
+                }}
+            />;
         }
 
         var pasteImageConfirmDialog = null;
@@ -2109,6 +2132,7 @@ export class ConversationPanel extends MegaRenderMixin {
 
                     {privateChatDialog}
                     {chatLinkDialog}
+                    {chessDialog}
                     {nonLoggedInJoinChatDialog}
                     {attachCloudDialog}
                     {sendContactDialog}
